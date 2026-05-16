@@ -76,25 +76,52 @@ async function main() {
   mkdirSync(framesDir, { recursive: true });
 
   // ---------- Launch browser -------------------------------------
+  // Chromium flag set mirrors Remotion's `open-browser.ts` so renders
+  // produce deterministic output across machines:
+  //   • sRGB color profile → no per-display color drift
+  //   • timer/renderer throttling disabled → RAF / setTimeout aren't
+  //     paused when the headless tab loses "focus"
+  //   • shared-memory + zygote disabled → safe in Docker / CI
+  //   • GL backend chosen per-platform (Metal on macOS, swiftshader
+  //     elsewhere) so non-macOS runs still complete instead of failing
+  //     to initialise WebGL2
+  const isMac = process.platform === 'darwin';
+  const glFlags = isMac
+    ? ['--use-gl=angle', '--use-angle=metal']
+    : ['--use-gl=angle', '--use-angle=swiftshader'];
+
   log('launching headless chromium');
   const browser = await puppeteer.launch({
     headless: 'new',
     args: [
       '--no-sandbox',
+      '--no-zygote',
       '--disable-setuid-sandbox',
       '--disable-web-security',
       '--allow-file-access-from-files',
-      '--disable-features=IsolateOrigins,site-per-process',
+      '--disable-features=IsolateOrigins,site-per-process,LayoutNGTextCombine',
       '--font-render-hinting=none',
       '--enable-font-antialiasing',
       '--disable-gpu-vsync',
       '--hide-scrollbars',
-      // Enable WebGL2 with software rasterizer (works on headless macOS)
+      '--mute-audio',
+      // Color reproducibility
+      '--force-color-profile=srgb',
+      '--disable-features=PaintHolding',
+      // Don't let background tabs / windows pause our timeline
+      '--disable-background-timer-throttling',
+      '--disable-renderer-backgrounding',
+      '--disable-background-networking',
+      '--disable-backgrounding-occluded-windows',
+      '--intensive-wake-up-throttling-policy=0',
+      // CI / Docker safety
+      '--disable-dev-shm-usage',
+      '--disk-cache-size=268435456',
+      // WebGL backend
       '--enable-webgl',
-      '--use-gl=angle',
-      '--use-angle=metal',
       '--enable-unsafe-swiftshader',
       '--ignore-gpu-blocklist',
+      ...glFlags,
     ],
     defaultViewport: null,
   });
@@ -123,8 +150,24 @@ async function main() {
   log('loading', htmlPath);
   await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'networkidle0' });
 
-  // Wait for runtime to mount
-  await page.waitForFunction(() => window.__mvm && window.__mvm.ready === true, { timeout: 15000 });
+  // Wait for runtime to mount + all `delayRender()` handles to clear.
+  // If `cancelRender()` was called from inside the page, surface that
+  // exception immediately instead of waiting out the 15s timeout.
+  try {
+    await page.waitForFunction(() => {
+      if (window.__mvmCancelledError) throw new Error(window.__mvmCancelledError);
+      return window.__mvm && window.__mvm.ready === true;
+    }, { timeout: 15000 });
+  } catch (e) {
+    const handles = await page.evaluate(() =>
+      window.__mvm && window.__mvm.pendingHandles ? window.__mvm.pendingHandles() : []
+    );
+    if (handles.length) {
+      err(`✘ ready timeout — still waiting on ${handles.length} delayRender handle(s):`);
+      handles.forEach(h => err('   •', h));
+    }
+    throw e;
+  }
 
   // Read stage meta (with overrides)
   let meta = await page.evaluate(() => window.__mvm.meta());
@@ -172,7 +215,18 @@ async function main() {
 
   for (let i = 0; i < totalFrames; i++) {
     const t = i / meta.fps;
-    await page.evaluate(time => window.__mvm.seek(time), t);
+    // Seek + check for in-page cancellation + ensure fonts/async work
+    // are complete before screenshotting.  document.fonts.ready
+    // resolves once every glyph used on the page has its font loaded;
+    // without it, CJK characters can render in fallback fonts on the
+    // first few frames they appear (different metrics → text shifts).
+    const cancelled = await page.evaluate(time => {
+      if (window.__mvmCancelledError) return window.__mvmCancelledError;
+      window.__mvm.seek(time);
+      return null;
+    }, t);
+    if (cancelled) throw new Error('[mvm] cancelRender(): ' + cancelled);
+    await page.evaluateHandle('document.fonts.ready');
     // Flush any pending layout/paint
     await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
     const filename = String(i).padStart(padLen, '0') + '.png';
@@ -203,6 +257,13 @@ async function main() {
   const preset = args.options.preset || 'slow';
   log('encoding with ffmpeg (crf=' + crf + ' preset=' + preset + ')');
 
+  // FFmpeg flags mirror Remotion's defaults:
+  //   • `bt709` color tags so QuickTime / Safari / iOS interpret the
+  //     stream correctly (otherwise they assume bt601 → washed colors)
+  //   • `-video_track_timescale 90000` for reproducible timestamps
+  //     across FFmpeg versions
+  //   • `+faststart` for instant streaming start
+  //   • `+write_colr` so the colr atom is actually written
   await runFfmpeg([
     '-y',
     '-framerate', String(meta.fps),
@@ -211,7 +272,12 @@ async function main() {
     '-pix_fmt', 'yuv420p',
     '-preset', preset,
     '-crf', String(crf),
-    '-movflags', '+faststart',
+    '-colorspace:v', 'bt709',
+    '-color_primaries:v', 'bt709',
+    '-color_trc:v', 'bt709',
+    '-color_range', 'tv',
+    '-video_track_timescale', '90000',
+    '-movflags', '+faststart+write_colr',
     outPath,
   ]);
 

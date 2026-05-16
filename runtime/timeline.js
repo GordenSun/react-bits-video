@@ -73,6 +73,86 @@
     return x * x * (3 - 2 * x);
   };
 
+  // ===============================================================
+  // DETERMINISTIC API — modelled after Remotion's delayRender /
+  // continueRender / random / cancelRender so this Skill can make the
+  // same "two renders → byte-identical output" guarantee.
+  // ===============================================================
+
+  // ---- (a) Async resource handles --------------------------------
+  // Any async work (image decode, font load, fetch, etc.) should call
+  // `__mvm.delayRender(label)`, then `continueRender(handle)` when done.
+  // While handles are outstanding, `window.__mvmReady === false`.
+  let _handleSeq = 0;
+  const _handles = new Map();
+  function delayRender(label) {
+    const id = ++_handleSeq;
+    _handles.set(id, { label: label || `handle ${id}`, started: Date.now() });
+    window.__mvmReady = false;
+    return id;
+  }
+  function continueRender(id) {
+    _handles.delete(id);
+    if (_handles.size === 0 && _domReady) window.__mvmReady = true;
+  }
+  function pendingHandleLabels() {
+    return [..._handles.values()].map(h => h.label);
+  }
+
+  // ---- (b) Cancellable render -------------------------------------
+  // Async failure should call `__mvm.cancelRender(err)` instead of
+  // silently throwing; render.mjs polls __mvmCancelledError each frame
+  // and aborts with the real error message instead of timing out.
+  function cancelRender(err) {
+    const msg = err && err.stack ? err.stack : String(err);
+    window.__mvmCancelledError = msg;
+    console.error('[mvm-cancel]', msg);
+  }
+
+  // ---- (c) Seeded random — mulberry32 ----------------------------
+  // Math.random() in the browser is seeded per-process, so two renders
+  // of the same composition produce different particle / starfield /
+  // glitch frames.  Authors that need randomness must call this with
+  // a fixed seed (string or number) — output is then deterministic.
+  function hashCode(s) {
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    return h;
+  }
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function seededRng(seed) {
+    if (seed == null) {
+      console.warn('[mvm-random] Math.random()-equivalent call with no seed — not deterministic. Pass a string/number seed.');
+      return Math.random;
+    }
+    const n = typeof seed === 'string' ? hashCode(seed) : (seed >>> 0);
+    return mulberry32(n || 1);
+  }
+  // Convenience: single sample from a stateless seed
+  function randomSample(seed) {
+    if (seed == null) return Math.random();
+    const n = typeof seed === 'string' ? hashCode(seed) : (seed >>> 0);
+    // single-step mulberry32 with a fixed advance so two callers
+    // with the same seed always get the same value
+    let a = ((n >>> 0) + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+
   // ----------- Composition discovery ----------------------------
   function getStage() {
     return document.getElementById('stage') || document.querySelector('[data-composition-id]');
@@ -300,6 +380,42 @@
     requestAnimationFrame(tick);
   }
 
+  // ===== Stage validation =========================================
+  // Reject compositions whose dimensions / fps / duration would crash
+  // FFmpeg later.  Failing loudly here saves a 30s render that ends in
+  // a cryptic libx264 error.
+  function validateStage(m) {
+    const warn = (msg) => console.warn(`[mvm-stage] ${msg} (see SKILL.md → Hard Rules)`);
+    if (!Number.isFinite(m.width) || m.width <= 0) {
+      throw new Error(`[mvm-stage] data-width must be a positive integer, got ${m.width}`);
+    }
+    if (!Number.isFinite(m.height) || m.height <= 0) {
+      throw new Error(`[mvm-stage] data-height must be a positive integer, got ${m.height}`);
+    }
+    if (m.width % 2 || m.height % 2) {
+      warn(`stage ${m.width}×${m.height} has odd dimension — H.264 requires even width/height. Use ${m.width - (m.width % 2)}×${m.height - (m.height % 2)}.`);
+    }
+    if (!Number.isFinite(m.fps) || m.fps <= 0 || m.fps > 120) {
+      throw new Error(`[mvm-stage] data-fps must be 1..120, got ${m.fps}`);
+    }
+    if (!Number.isFinite(m.duration) || m.duration <= 0) {
+      throw new Error(`[mvm-stage] data-duration must be a positive number of seconds, got ${m.duration}`);
+    }
+    // Per-clip sanity
+    const stage = getStage();
+    if (stage) {
+      stage.querySelectorAll('[data-clip]').forEach(el => {
+        const s = parseFloat(el.dataset.start || '0');
+        const d = parseFloat(el.dataset.duration || String(m.duration));
+        if (!Number.isFinite(s) || s < 0) warn(`clip has invalid data-start="${el.dataset.start}"`);
+        if (!Number.isFinite(d) || d <= 0) warn(`clip has invalid data-duration="${el.dataset.duration}"`);
+        if (s + d > m.duration + 0.01) {
+          warn(`clip "${(el.textContent || '').trim().slice(0, 24)}" runs ${s}s..${(s + d).toFixed(2)}s but stage is only ${m.duration}s long — last ${(s + d - m.duration).toFixed(2)}s will never play.`);
+        }
+      });
+    }
+  }
+
   window.__mvm = {
     seek: seekAll,
     meta: getStageMeta,
@@ -307,14 +423,24 @@
     lerp, clamp01, smoothstep,
     register(name, fn) { ANIMS[name] = fn; },
     anims: ANIMS,
-    ready: true,
+    // Deterministic API (mirrors Remotion's contract)
+    delayRender, continueRender, cancelRender,
+    pendingHandles: pendingHandleLabels,
+    random: seededRng,          // returns a stateful PRNG function
+    randomSample,               // returns a single deterministic sample
+    validateStage,
+    get ready() { return _domReady && _handles.size === 0; },
   };
 
   // Allow renderer to wait for full readiness signal
+  let _domReady = false;
   window.__mvmReady = false;
+  window.__mvmCancelledError = null;
   document.addEventListener('DOMContentLoaded', () => {
-    // Auto preview if not in render mode
+    try { validateStage(getStageMeta()); }
+    catch (e) { cancelRender(e); throw e; }
     if (!window.__mvmRenderMode) startPreview();
-    window.__mvmReady = true;
+    _domReady = true;
+    if (_handles.size === 0) window.__mvmReady = true;
   });
 })();

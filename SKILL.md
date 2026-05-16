@@ -30,6 +30,86 @@ A self-contained skill for authoring **cinematic HTML animations** and
 rendering them to **frame-accurate MP4** video. One composition = one HTML
 file driven by a tiny deterministic timeline runtime.
 
+## Hard Rules — READ FIRST (non-negotiable)
+
+These prevent the bugs we keep seeing in agent-generated videos.
+`scripts/lint.mjs` enforces most of them and exits non-zero on violations.
+
+| ❌ Don't | ✅ Do |
+|---|---|
+| `style="font-size: 180px"` on a long heading | use `.title-2xl` / `.title-xl` / `.title-lg` class (see [Typography limits](#typography-limits)) |
+| `.text-aurora` (blue-cyan gradient) over a cool palette | match palette family → use `.text-on-cool` instead |
+| `data-background` without `data-palette` and without `data-colors` | always pick a named palette (`cool-deep`, `warm-glow`, etc.) |
+| `style="position: relative"` on a `[data-background]` element | leave it alone — CSS already sets `position: absolute` |
+| `Math.random()` / `Date.now()` / `new Date()` inside `<script>` | use `__mvm.random("seed")` / pass `t` from `mvm-seek` event |
+| odd `data-width` / `data-height` (e.g. 1921×1081) | use even integers — H.264 refuses odd dimensions |
+| `data-animation-out` on a non-final scene without a `<div data-transition>` | bridge the cut with a transition (pixel-dissolve / iris / glitch / wipe-left / flash) |
+| inline `<style>` with `transition:` / `@keyframes` | use `data-animation` + the runtime — CSS transitions don't seek and break determinism |
+| fade non-final scenes to opacity 0 | only the **last** scene may fade to black; everything else must hand off via a transition |
+| `background-image: url(...)` (CSS bg image, browser doesn't fire load event) | use `<img class="bg-img" style="position:absolute;inset:0;">` |
+
+Run `node scripts/lint.mjs path/to/index.html` before rendering. Add
+`--strict` in CI so warnings also fail.
+
+## Determinism Contract
+
+Two renders of the same HTML file MUST produce byte-identical MP4 output.
+The runtime + render pipeline already enforce this — but author code can
+break it. The rules:
+
+1. **Never call `Math.random()`** in inline scripts. Use one of:
+   - `window.__mvm.random("a-stable-string-seed")` → stateful PRNG function
+   - `window.__mvm.randomSample("seed")` → one deterministic value
+2. **Never call `Date.now()` / `new Date()` / `performance.now()`** for
+   anything visible. Time MUST come from the `mvm-seek` event detail.
+3. **Never use CSS `transition` / `animation`** on stage elements — those
+   don't respect the timeline's seek mechanism, so they play in preview
+   but appear "frozen" in the rendered MP4.
+4. **Never use `setTimeout` / `setInterval`** to drive visuals. The renderer
+   issues `seek(t)` at 30 fps step boundaries; any wall-clock-driven code
+   will skip frames.
+5. **All async resources go through `delayRender` / `continueRender`**:
+   ```js
+   const h = window.__mvm.delayRender('Loading hero image');
+   img.onload  = () => window.__mvm.continueRender(h);
+   img.onerror = () => window.__mvm.cancelRender(new Error('hero image failed'));
+   ```
+   The renderer waits for `__mvm.ready === true` (i.e. all handles cleared)
+   before screenshotting each frame; failures surface immediately with the
+   pending handle labels printed.
+
+## Scene Transitions — non-negotiable rules
+
+Borrowed from Hyperframes. Failing these is the #1 reason a video feels
+"choppy" or "broken".
+
+1. **Every scene boundary must have a `<div data-transition>`.** Pick one
+   of: `pixel-dissolve` / `iris` / `glitch` / `wipe-left` / `wipe-right`
+   / `wipe-up` / `wipe-down` / `flash`. The transition straddles the cut.
+2. **Every text/element must have a `data-animation` (entrance).** Don't
+   appear out of nothing — fade, slide, drop, mask in.
+3. **Don't add `data-animation-out` to a non-final scene.** The transition
+   IS the exit. Adding an extra fade-out makes the screen go blank for
+   ~0.3s and looks like a bug. `scripts/lint.mjs` flags this as `E005`.
+4. **Only the final scene may fade to opacity 0.** Earlier scenes hand off
+   via the transition; the last scene closes the video.
+
+```html
+<!-- Scene 1 -->
+<div data-background="meta-balls" data-palette="warm-glow"
+     data-clip data-start="0" data-duration="5.8"
+     data-animation="fadeIn"></div>   <!-- ✅ entrance only -->
+
+<!-- Transition (bridges 5.3s → 6.0s) -->
+<div data-transition="pixel-dissolve" data-start="5.3" data-duration="0.7"></div>
+
+<!-- Scene 2 starts at 5.8s -->
+<div data-background="liquid-ether" data-palette="cool-deep"
+     data-clip data-start="5.8" data-duration="5.5"
+     data-animation="fadeIn"></div>   <!-- ✅ no data-animation-out -->
+```
+
+
 ```
 motion-video-maker/
 ├── runtime/        # timeline.js, components.js, spring.js, shaders.js,
