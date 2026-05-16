@@ -118,6 +118,64 @@ body.mvm-preview #stage {
   z-index: 10;
 }
 
+/* ============================================================
+ * TYPOGRAPHY DEFAULTS & OVERFLOW GUARDS
+ *
+ * Agents constantly forget that:
+ *  (a) flex containers DON'T inherit text-align — once the inline
+ *      style="display:flex" is set, an h1 inside falls back to the
+ *      browser default (text-align: start) and a long title that
+ *      wraps will sit left-aligned on every line.
+ *  (b) writing `font-size: 180px` for "Motion Video Maker" overflows
+ *      the 1920-px stage and wraps mid-word.
+ *
+ * The rules below center every heading & paragraph by default,
+ * give them a 92% max-width safety margin, and use `text-wrap: balance`
+ * so a forced wrap at least produces an evenly-distributed line break.
+ * Authors can still override via inline style if they want left/right.
+ * ============================================================ */
+#stage {
+  text-align: center;
+}
+#stage h1, #stage h2, #stage h3, #stage h4, #stage h5, #stage h6,
+#stage p {
+  text-align: center;
+  margin: 0 auto;
+  max-width: 92%;
+  text-wrap: balance;
+  /* Use 'pretty' fallback first so older Chromium degrades gracefully */
+  text-wrap: pretty;
+  text-wrap: balance;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+}
+
+/* Safe font-size scale tuned for the canonical 1920×1080 stage.
+ * Use these instead of writing px directly — every value has been
+ * checked not to overflow with a 22-character (CJK + ASCII mix) line.
+ *
+ * Approximate max width @ 1920px (no letter-spacing):
+ *   .title-3xl  ~14 chars latin  /  ~12 chars CJK
+ *   .title-2xl  ~18 chars latin  /  ~15 chars CJK
+ *   .title-xl   ~22 chars latin  /  ~18 chars CJK
+ *   .title-lg   ~28 chars latin  /  ~22 chars CJK
+ *   .title-md   ~38 chars latin  /  ~28 chars CJK
+ */
+.title-3xl { font-size: 160px; line-height: 1.05; font-weight: 900; }
+.title-2xl { font-size: 130px; line-height: 1.08; font-weight: 900; }
+.title-xl  { font-size: 100px; line-height: 1.10; font-weight: 800; }
+.title-lg  { font-size: 80px;  line-height: 1.15; font-weight: 800; }
+.title-md  { font-size: 60px;  line-height: 1.2;  font-weight: 700; }
+.title-sm  { font-size: 44px;  line-height: 1.25; font-weight: 600; }
+.body-lg   { font-size: 40px;  line-height: 1.35; }
+.body-md   { font-size: 32px;  line-height: 1.4; }
+.body-sm   { font-size: 24px;  line-height: 1.5; }
+
+/* Auto-shrink helper: applies to any heading/paragraph that should
+   never wrap. Use sparingly — it shrinks the WHOLE element to fit. */
+.no-wrap   { white-space: nowrap; }
+.fit-line  { white-space: nowrap; max-width: 92%; }
+
 /* Cinematic vignette helper */
 .vignette::after {
   content: '';

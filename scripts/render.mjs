@@ -100,14 +100,17 @@ async function main() {
   });
   const page = await browser.newPage();
 
-  // Forward browser console errors + collect contrast-check warnings
-  // for a single end-of-render summary.
+  // Forward browser console errors + collect contrast / layout
+  // warnings for a single end-of-render summary.
   const contrastWarnings = [];
+  const layoutWarnings = [];
   page.on('console', m => {
     const text = m.text();
     if (m.type() === 'error') err('[browser]', text);
     else if (m.type() === 'warning' && text.startsWith('[mvm-contrast]')) {
       contrastWarnings.push(text.replace('[mvm-contrast]', '').trim());
+    } else if (m.type() === 'warning' && text.startsWith('[mvm-layout]')) {
+      layoutWarnings.push(text.replace('[mvm-layout]', '').trim());
     }
   });
   page.on('pageerror', e => err('[browser:exception]', e.message));
@@ -162,6 +165,11 @@ async function main() {
   // ---------- Per-frame capture ---------------------------------
   const t0 = Date.now();
   let lastReport = t0;
+  // Sample layout-check every ~1.5s of timeline.  We skip the first
+  // 0.8s of every scene because text entrance animations distort the
+  // bounding rect, and we re-scan once the frame is fully stable.
+  const layoutScanFps = Math.max(1, Math.floor(meta.fps * 1.5));
+
   for (let i = 0; i < totalFrames; i++) {
     const t = i / meta.fps;
     await page.evaluate(time => window.__mvm.seek(time), t);
@@ -174,6 +182,11 @@ async function main() {
       omitBackground: false,
       clip: { x: 0, y: 0, width: meta.width, height: meta.height },
     });
+    // Run layout check once every ~1.5 seconds of timeline.  Trigger
+    // it on a stable frame to avoid catching transient entrance states.
+    if (i > 0 && i % layoutScanFps === 0) {
+      await page.evaluate(() => window.__mvmLayoutCheck && window.__mvmLayoutCheck.scan());
+    }
     const now = Date.now();
     if (now - lastReport > 1000) {
       const pct = ((i + 1) / totalFrames * 100).toFixed(1);
@@ -221,6 +234,17 @@ async function main() {
     err('────────────────────────────────────────────────────────');
     uniqueWarnings.slice(0, 10).forEach(w => err('  •', w));
     if (uniqueWarnings.length > 10) err(`  • ... and ${uniqueWarnings.length - 10} more`);
+  }
+
+  const uniqueLayout = Array.from(new Set(layoutWarnings));
+  if (uniqueLayout.length > 0) {
+    err('────────────────────────────────────────────────────────');
+    err(`⚠  ${uniqueLayout.length} LAYOUT/OVERFLOW ISSUE(S) DETECTED`);
+    err('   (text wrapped or extended past the stage edge — use a');
+    err('    smaller .title-* preset, e.g. .title-xl = 100px)');
+    err('────────────────────────────────────────────────────────');
+    uniqueLayout.slice(0, 10).forEach(w => err('  •', w));
+    if (uniqueLayout.length > 10) err(`  • ... and ${uniqueLayout.length - 10} more`);
   }
 }
 

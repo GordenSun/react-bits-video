@@ -66,12 +66,14 @@
        data-clip data-start="0.3" data-duration="5.0"
        data-text-animation="scramble-text" data-anim-duration="1.4">CLAUDE CODE SKILL</p>
 
-    <!-- Title: solid white + heavy halo. Don't use .text-aurora here
-         (its blue-cyan gradient would clash with the warm meta-balls). -->
-    <h1 class="text-on-warm"
+    <!-- Title: use .title-2xl preset (130px — safe for 1920-wide stage
+         even at this character count). NEVER write font-size directly
+         for long titles — pick from .title-3xl / 2xl / xl / lg / md.
+         Solid white + heavy halo. Don't use .text-aurora here (its
+         blue-cyan gradient would clash with the warm meta-balls). -->
+    <h1 class="title-2xl text-on-warm"
         style="font-family: 'Noto Serif SC', serif;
-               font-size: 180px; font-weight: 900; letter-spacing: 0.06em;
-               color: #ffffff;
+               letter-spacing: 0.02em; color: #ffffff;
                filter: drop-shadow(0 0 30px rgba(0,0,0,0.85))
                        drop-shadow(0 8px 24px rgba(0,0,0,0.65));"
         data-clip data-start="0.8" data-duration="4.5"
@@ -344,5 +346,6 @@
 <script src="../../runtime/transitions.js"></script>
 <script src="../../runtime/effects.js"></script>
 <script src="../../runtime/contrast-check.js"></script>
+<script src="../../runtime/layout-check.js"></script>
 </body>
 </html>

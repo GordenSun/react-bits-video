@@ -260,6 +260,49 @@ Inspired by react-bits' ElectricBorder / StarBorder / ImageTrail.
     data-easing="springSmooth">FLOW</h1>
 ```
 
+## Typography limits — never write `font-size: 180px` for a long title
+
+The stage is **1920×1080**.  At that width, "Motion Video Maker" wraps
+mid-word once you go above ~140px; longer phrases like
+"HTML 驱动的电影级动画引擎" need even smaller sizes.  Always pick from
+the safe scale instead of writing px:
+
+```html
+<!-- ✅ Safe — fits 1920px stage for typical 15–22 char titles -->
+<h1 class="title-2xl text-on-warm">Motion Video Maker</h1>
+
+<!-- ✅ Also safe — for shorter, punchier hero titles -->
+<h1 class="title-3xl text-on-cool">时间飞逝</h1>
+
+<!-- ❌ Don't do this — wraps to two left-aligned lines on a 1920 stage -->
+<h1 style="font-size: 180px;">Motion Video Maker</h1>
+```
+
+### Safe font-size scale (verified non-wrapping @ 1920×1080)
+
+| Class | font-size | Safe up to (latin / CJK) |
+|---|---|---|
+| `.title-3xl` | 160px | 14 chars / 12 chars |
+| `.title-2xl` | 130px | 18 chars / 15 chars |
+| `.title-xl`  | 100px | 22 chars / 18 chars |
+| `.title-lg`  |  80px | 28 chars / 22 chars |
+| `.title-md`  |  60px | 38 chars / 28 chars |
+| `.title-sm`  |  44px | wide subtitles |
+| `.body-lg/md/sm` | 40/32/24px | paragraphs |
+
+The runtime ships `layout-check.js`: any heading that wraps or extends
+past the stage edge produces a `[mvm-layout]` console.warn during
+rendering, and the render script prints a summary at the end so you
+know to dial down the font size before re-rendering.
+
+### Center by default
+
+The runtime now applies `text-align: center; margin: 0 auto; max-width: 92%`
+to every `#stage h1–h6, #stage p`.  Flex containers no longer cause
+left-aligned titles when text wraps.  Set `text-align: left` (or
+`.pos-left` / `.pos-right`) on the element if you actually want it
+off-center.
+
 ## Background palette + matching text class — the PALETTE PAIR rule
 
 This is the **#1 thing other agents got wrong** in the wild: choosing

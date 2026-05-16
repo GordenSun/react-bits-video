@@ -97,6 +97,7 @@ const html = `<!DOCTYPE html>
   <script src="../../runtime/transitions.js"></script>
   <script src="../../runtime/effects.js"></script>
   <script src="../../runtime/contrast-check.js"></script>
+  <script src="../../runtime/layout-check.js"></script>
 </body>
 </html>
 `;
