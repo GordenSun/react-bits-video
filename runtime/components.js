@@ -520,7 +520,11 @@
       c.style.width = '100%';
       c.style.height = '100%';
       c.style.display = 'block';
-      el.style.position = el.style.position || 'relative';
+      // Only set position if the element is currently `static` —
+      // never trample an author's (or CSS's) `absolute` / `fixed`.
+      if (getComputedStyle(el).position === 'static') {
+        el.style.position = 'relative';
+      }
       el.appendChild(c);
     }
     // sync resolution
@@ -598,8 +602,13 @@
     const c = getCanvas(el);
     const ctx = c.getContext('2d');
     const w = c.width, h = c.height;
-    const colors = (el.dataset.colors ||
-      '#3a1c71,#d76d77,#ffaf7b,#3a1c71').split(',');
+    // Honor data-palette (named preset, looked up via shaders.js)
+    // before falling back to the canvas-bg specific default.
+    const colors = (
+      el.dataset.colors ||
+      (window.__mvmShaders && window.__mvmShaders.resolvePalette(el.dataset.palette)) ||
+      '#3a1c71,#d76d77,#ffaf7b,#3a1c71'
+    ).split(',');
     // Animated radial gradient stops
     ctx.fillStyle = '#06060c';
     ctx.fillRect(0, 0, w, h);

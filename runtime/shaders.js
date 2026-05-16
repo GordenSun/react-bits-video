@@ -384,7 +384,16 @@ void main() {
       canvas.style.width = '100%';
       canvas.style.height = '100%';
       canvas.style.display = 'block';
-      el.style.position = el.style.position || 'relative';
+      // CRITICAL: don't trample the host element's CSS position.
+      // `el.style.position` is the INLINE style (almost always empty),
+      // so `el.style.position || 'relative'` was overriding the
+      // CSS `position: absolute` we set on `[data-background]`.
+      // Only fall back to `relative` when the computed position is
+      // genuinely `static` (which is the only state that breaks
+      // absolute canvas positioning).
+      if (getComputedStyle(el).position === 'static') {
+        el.style.position = 'relative';
+      }
       el.appendChild(canvas);
     }
     const w = el.clientWidth  || 1920;
@@ -395,7 +404,16 @@ void main() {
     }
     if (el.__mvmShaderName === shaderName && el.__mvmGL) return el.__mvmGL;
 
-    const gl = canvas.getContext('webgl2', { alpha: true, antialias: false, premultipliedAlpha: false });
+    // preserveDrawingBuffer: true is essential — without it, the WebGL
+    // framebuffer is cleared between draw calls and puppeteer
+    // screenshots capture an empty canvas. This is the #1 reason
+    // shaders "don't show up" in rendered MP4s.
+    const gl = canvas.getContext('webgl2', {
+      alpha: true,
+      antialias: false,
+      premultipliedAlpha: false,
+      preserveDrawingBuffer: true,
+    });
     if (!gl) {
       console.warn('[mvm:shader] webgl2 not available; skipping');
       return null;
@@ -445,7 +463,14 @@ void main() {
     gl.useProgram(program);
 
     // Parse author-defined palette (4 stops), fallback to a sensible default
-    const colors = (el.dataset.colors || '#1a1a2a,#5b86e5,#86A8E7,#0a0a16').split(',');
+    // Resolve a 4-stop hex palette in this order:
+    //   1. explicit `data-colors="#a,#b,#c,#d"`  (highest priority)
+    //   2. named `data-palette="cool-deep"`      (looked up below)
+    //   3. fallback to a neutral cool default
+    const colors = (
+      el.dataset.colors || resolvePalette(el.dataset.palette) ||
+      '#1a1a2a,#5b86e5,#86A8E7,#0a0a16'
+    ).split(',');
     const getCol = i => hexToRgb((colors[i] || colors[colors.length - 1]).trim());
 
     gl.uniform2f(uniforms.u_resolution, w, h);
@@ -475,6 +500,51 @@ void main() {
     registerShaders();
   }
 
-  // Expose for advanced authors
-  window.__mvmShaders = { SHADERS, mount, apply: applyShader };
+  // ===== Named palette presets — agent-friendly color picker ======
+  // Each preset is a hand-tuned 4-stop palette guaranteed to:
+  //   (a) read cleanly with its paired `.text-on-*` class
+  //   (b) leave room for foreground text (deep darks always present)
+  //   (c) not clash with the other palettes in the same family
+  //
+  // Usage:  <div data-background="liquid-ether" data-palette="cool-deep">
+  const PALETTES = {
+    // ---- COOL family (use with .text-on-cool / .mvm-stat--cool) ----
+    // Tones tuned so the lighter stops have enough luminance to read
+    // as "cool blue/violet" through a 0.4 scrim, while the dark stops
+    // give text a guaranteed contrast anchor.
+    'cool-deep':        '#06061a,#2a2070,#4a6dc0,#0a3055',
+    'cool-arctic':      '#020412,#0a3055,#5BC0EB,#020412',
+    'cool-neon':        '#06081c,#1a2a70,#5BC0EB,#9d8df1',
+    'cool-violet':      '#080418,#2a1c5a,#5b86e5,#9d8df1',
+
+    // ---- WARM family (use with .text-on-warm / .mvm-stat--warm) ----
+    'warm-glow':        '#1a0a08,#FF6363,#FFD400,#FF8B5E',
+    'warm-sunset':      '#08020a,#7a2030,#FF8B5E,#FFD400',
+    'warm-ember':       '#04020a,#3a0a08,#FF6363,#FFE87A',
+    'warm-autumn':      '#06040a,#C95F2D,#FF8B5E,#FFD400',
+
+    // ---- PRISMATIC family (use with .text-on-prismatic ONLY) ------
+    'prismatic-cyber':  '#06061a,#ff3cac,#784ba0,#2b86c5',
+    'prismatic-vapor':  '#0a061a,#ff3cac,#9d8df1,#5BC0EB',
+    'prismatic-magic':  '#04020a,#9d8df1,#FF6363,#2af598',
+
+    // ---- MONOCHROME family (use with .text-on-mono) ---------------
+    'mono-deep':        '#040408,#0a0a16,#1a1a26,#06061a',
+    'mono-ink':         '#020204,#080812,#15151c,#020204',
+    'mono-graphite':    '#0a0a14,#15151c,#2a2a3a,#0a0a14',
+
+    // ---- LIGHT family (background = light; use .text-on-light) ----
+    'light-paper':      '#f7f5ef,#ede8db,#fff8e8,#f7f5ef',
+    'light-misty':      '#e8eef5,#d6dde8,#c8d8e8,#e8eef5',
+  };
+
+  function resolvePalette(name) {
+    if (!name) return null;
+    if (PALETTES[name]) return PALETTES[name];
+    console.warn(`[mvm-shaders] unknown data-palette="${name}". Available: ${Object.keys(PALETTES).join(', ')}`);
+    return null;
+  }
+
+  // Expose for advanced authors + agents listing options
+  window.__mvmShaders = { SHADERS, mount, apply: applyShader, PALETTES, resolvePalette };
 })();

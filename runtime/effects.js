@@ -21,7 +21,9 @@
       c.style.pointerEvents = 'none';
       c.style.zIndex = String(zIndex);
       c.style.display = 'block';
-      el.style.position = el.style.position || 'relative';
+      if (getComputedStyle(el).position === 'static') {
+        el.style.position = 'relative';
+      }
       el.appendChild(c);
     }
     return c;
@@ -416,8 +418,11 @@
         }
         break;
     }
-    // Make sure parent can absolutely-position the scrim
-    el.style.position = el.style.position || 'relative';
+    // Make sure parent can absolutely-position the scrim — but never
+    // trample an existing absolute/fixed/relative from CSS or author.
+    if (getComputedStyle(el).position === 'static') {
+      el.style.position = 'relative';
+    }
     el.style.isolation = 'isolate';
     el.insertBefore(scrim, el.firstChild);
   }

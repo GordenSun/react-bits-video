@@ -260,6 +260,72 @@ Inspired by react-bits' ElectricBorder / StarBorder / ImageTrail.
     data-easing="springSmooth">FLOW</h1>
 ```
 
+## Background palette + matching text class — the PALETTE PAIR rule
+
+This is the **#1 thing other agents got wrong** in the wild: choosing
+a shader palette and a text gradient class from the same hue family,
+producing invisible text. Examples observed:
+
+- `.text-aurora` (cyan/blue/violet gradient) on `liquid-ether` with a
+  blue/violet `data-colors` → text vanishes into the background.
+- `.text-fire` (yellow/orange/red gradient) on `meta-balls` with a
+  red/orange `data-colors` → text vanishes into the background.
+
+To eliminate this entire class of bugs, the runtime now ships
+**named palettes** for every shader and **matching text classes** that
+have been hand-tuned for 4.5:1 contrast against that palette family.
+You only ever have to pick one of each.
+
+### Named palettes (`data-palette="..."`)
+
+| Family | Palette names | Best with text class |
+|---|---|---|
+| **Cool** (blue / violet) | `cool-deep` `cool-arctic` `cool-neon` `cool-violet` | `.text-on-cool` (warm yellow) / `.text-on-cool-soft` |
+| **Warm** (red / orange / gold) | `warm-glow` `warm-sunset` `warm-ember` `warm-autumn` | `.text-on-warm` (cool white-blue) / `.text-on-warm-soft` |
+| **Prismatic** (rainbow / vapor) | `prismatic-cyber` `prismatic-vapor` `prismatic-magic` | `.text-on-prismatic` (pure white + heavy halo) |
+| **Mono** (deep neutral) | `mono-deep` `mono-ink` `mono-graphite` | `.text-on-mono` (warm yellow) |
+| **Light** (paper / misty) | `light-paper` `light-misty` | `.text-on-light` (dark ink) |
+
+```html
+<!-- ✅ Cool palette + cool text class -->
+<div data-background="liquid-ether" data-palette="cool-deep"
+     data-clip data-start="0" data-duration="6"
+     data-animation="fadeIn" data-animation-out="fadeOut"></div>
+
+<div class="scene-scrim" data-clip data-hide-mode="visibility"
+     data-start="0" data-duration="5.5"
+     style="position:absolute; inset:0; z-index:10; display:flex; ...">
+  <p class="eyebrow text-on-cool">ANIMATION COMPONENTS</p>
+  <h1 class="text-on-cool" style="font-size:120px; color:#fff;">标题</h1>
+</div>
+
+<!-- ❌ Don't do this — .text-aurora over a cool shader = invisible -->
+<h1 class="text-aurora" ...>标题</h1>
+```
+
+### Drop-in stat-card preset (`.mvm-stat`)
+
+When showing numeric stats on any shader, use the `.mvm-stat` family
+to skip color-picking entirely. Pair the border accent with the
+scene's palette family:
+
+```html
+<!-- Cool-themed scene → red/cool/warm accents from .mvm-stat--* -->
+<div class="mvm-stat mvm-stat--red"
+     data-clip ... data-animation="magneticIn">
+  <span class="mvm-stat-num" data-text-animation="count-up" data-odometer="true"
+        data-from="0" data-to="17">0</span>
+  <span class="mvm-stat-label">种文字动画</span>
+</div>
+```
+
+The stat card has a solid dark plate built-in (no contrast worry),
+white digits, muted serif label, and the accent border lets you
+differentiate three or four stats by hue without changing text color.
+
+See **[`examples/skill-intro/index.html`](examples/skill-intro/index.html)** — 6 scenes,
+6 different palettes, 0 contrast warnings.
+
 ## Color & contrast contract — READ THIS FIRST
 
 The runtime gives every composition a **white-on-dark default**. Follow

@@ -275,6 +275,56 @@ body.mvm-preview #stage {
 }
 
 /* ===============================================================
+ * PRE-VALIDATED PALETTE PAIRS — pick a named `data-palette` for any
+ * shader background, and the matching `.text-on-*` class to read on
+ * top.  This eliminates the #1 authoring failure mode: a gradient
+ * text class (.text-aurora / .text-fire) being the same hue family
+ * as the shader behind it (e.g. .text-aurora over a cool liquid-ether).
+ *
+ * Set on `[data-background]`:
+ *
+ *   <div data-background="liquid-ether" data-palette="cool-deep"></div>
+ *
+ * runtime/shaders.js maps the palette name to its 4-stop hex list,
+ * so you don't have to think about color again.
+ *
+ * Then on every text element inside that scene, apply the matching
+ * `.text-on-cool` / `.text-on-warm` / `.text-on-prismatic` class.
+ * ============================================================ */
+
+/* Safe text colors — these tones have been hand-tuned for at least
+   4.5:1 WCAG contrast over the matching shader palette family. */
+.text-on-cool       { color: #FFE87A !important; text-shadow: 0 2px 12px rgba(0,0,0,0.85); }
+.text-on-cool-soft  { color: #FFD9B0 !important; text-shadow: 0 2px 12px rgba(0,0,0,0.85); }
+.text-on-warm       { color: #E8F4FF !important; text-shadow: 0 2px 12px rgba(0,0,0,0.85); }
+.text-on-warm-soft  { color: #B0DCFF !important; text-shadow: 0 2px 12px rgba(0,0,0,0.85); }
+.text-on-prismatic  { color: #ffffff !important; text-shadow: 0 0 18px #000, 0 2px 8px rgba(0,0,0,0.95); }
+.text-on-mono       { color: #FFE87A !important; text-shadow: 0 2px 12px rgba(0,0,0,0.85); }
+.text-on-light      { color: #1a0a08 !important; text-shadow: 0 1px 3px rgba(255,255,255,0.6); }
+
+/* Stat-card preset — drop-in component that bundles all the safe
+   defaults: dark plate background, white digits, muted label.  No
+   author color decisions needed. */
+.mvm-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  padding: 24px 40px;
+  background: rgba(8, 8, 16, 0.72);
+  border-radius: 14px;
+  border-left: 4px solid var(--mvm-accent);
+  color: #ffffff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+}
+.mvm-stat-num   { font-family: "Noto Sans SC", system-ui, sans-serif; font-weight: 900; font-size: 120px; line-height: 1; color: #ffffff; }
+.mvm-stat-label { font-family: "Noto Serif SC", serif; font-size: 40px; color: #cbd5e1; letter-spacing: 0.08em; }
+.mvm-stat--warm { border-left-color: #FFD400; }
+.mvm-stat--cool { border-left-color: #5BC0EB; }
+.mvm-stat--red  { border-left-color: #FF6363; }
+
+/* ===============================================================
  * GUARANTEED-CONTRAST PAIRS — bulletproof text/background combos.
  * Use these when an agent needs "I just want text I can read" with
  * zero color thinking.  Each class sets BOTH color and background so
@@ -410,13 +460,15 @@ body.mvm-preview #stage {
   inset: 0;
   z-index: 2;
   pointer-events: none;
+  /* Reduced from 0.55/0.35/0.6 → 0.4/0.2/0.45 so the shader behind
+     keeps its color/movement while text still lifts cleanly. */
   background: radial-gradient(ellipse 80% 65% at center,
-              rgba(0, 0, 0, 0.55) 0%,
-              rgba(0, 0, 0, 0.35) 55%,
-              rgba(0, 0, 0, 0.6) 100%);
+              rgba(0, 0, 0, 0.4) 0%,
+              rgba(0, 0, 0, 0.2) 55%,
+              rgba(0, 0, 0, 0.45) 100%);
 }
-.scene-scrim-strong::before  { background: radial-gradient(ellipse 80% 65% at center, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.8) 100%); }
-.scene-scrim-soft::before    { background: radial-gradient(ellipse 90% 75% at center, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.35) 100%); }
+.scene-scrim-strong::before  { background: radial-gradient(ellipse 80% 65% at center, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.6)  100%); }
+.scene-scrim-soft::before    { background: radial-gradient(ellipse 90% 75% at center, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.08) 55%, rgba(0,0,0,0.22) 100%); }
 .scene-scrim-bottom::before  { background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 35%, rgba(0,0,0,0) 70%); }
 .scene-scrim-top::before     { background: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 35%, rgba(0,0,0,0) 70%); }
 
