@@ -1,0 +1,27 @@
+{
+  "name": "motion-video-maker",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Cinematic HTML animations + frame-accurate MP4 rendering. Inspired by React-Bits, Remotion, and Hyperframes.",
+  "scripts": {
+    "fonts": "node scripts/install-fonts.mjs",
+    "new": "node scripts/new-video.mjs",
+    "preview": "node scripts/preview.mjs",
+    "render": "node scripts/render.mjs",
+    "render:time-flies": "node scripts/render.mjs examples/time-flies/index.html examples/time-flies/output.mp4 fps=30 crf=18 preset=medium"
+  },
+  "keywords": [
+    "video",
+    "animation",
+    "motion-graphics",
+    "puppeteer",
+    "ffmpeg",
+    "html-to-video",
+    "kinetic-typography",
+    "chinese-fonts"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^25.0.2"
+  }
+}

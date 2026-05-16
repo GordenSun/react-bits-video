@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Shader + Spring test</title>
+  <link rel="stylesheet" href="../runtime/styles.css" />
+  <link rel="stylesheet" href="../assets/fonts/fonts.css" />
+</head>
+<body class="mvm-preview">
+  <div id="stage"
+       data-composition-id="shader-test"
+       data-width="1920" data-height="1080" data-fps="15" data-duration="3">
+    <div data-background="liquid-ether"
+         data-colors="#1a0d22,#FF6363,#FFD400,#5BC0EB"
+         data-intensity="1.2" data-scale="1.5"></div>
+
+    <div class="scene center">
+      <h1 class="title text-aurora"
+          data-clip data-start="0" data-duration="3"
+          data-text-animation="split-text"
+          data-stagger="0.08" data-char-duration="1.2"
+          data-easing="springBouncy"
+          data-travel="120">弹簧物理 · 着色器</h1>
+    </div>
+  </div>
+  <script src="../runtime/spring.js"></script>
+  <script src="../runtime/timeline.js"></script>
+  <script src="../runtime/components.js"></script>
+  <script src="../runtime/shaders.js"></script>
+</body>
+</html>

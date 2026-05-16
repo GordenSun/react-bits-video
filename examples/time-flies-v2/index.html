@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>时间飞逝 · TIME FLIES (v2)</title>
+  <link rel="stylesheet" href="../../runtime/styles.css" />
+  <link rel="stylesheet" href="../../assets/fonts/fonts.css" />
+  <style>
+    :root {
+      --sun:   #FFD400;
+      --amber: #FF8B5E;
+      --red:   #FF6363;
+      --rose:  #C95F2D;
+      --cyan:  #5BC0EB;
+      --blue:  #5b86e5;
+      --violet:#9d8df1;
+      --mint:  #2af598;
+      --ink:   #08080f;
+    }
+
+    /* Brand gradient text */
+    .text-sun {
+      background: linear-gradient(180deg, #FFE87A 0%, #FFD400 35%, #FF8B5E 70%, #FF6363 100%);
+      background-size: 100% 200%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .text-cyan {
+      background: linear-gradient(110deg, #5BC0EB 0%, #9d8df1 60%, #5b86e5 100%);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ============================================================
+       Scene 1 — Intro
+       ============================================================ */
+    .intro-stage {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 36px;
+    }
+    .intro-eyebrow {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 26px;
+      letter-spacing: 0.6em;
+      color: #FFE87A;
+      text-transform: uppercase;
+      text-shadow: 0 0 18px rgba(255,232,122,0.6),
+                   0 2px 8px rgba(0,0,0,0.85);
+    }
+    /* Title: 思源宋体 Black — elegant Chinese serif, more literary than
+       Noto Sans SC. Wider letter-spacing for poster-style presence. */
+    .intro-title {
+      font-family: "Noto Serif SC", "Source Han Serif SC", "STSong", serif;
+      font-weight: 900;
+      font-size: 320px;
+      letter-spacing: 0.16em;
+      line-height: 1;
+      filter: drop-shadow(0 12px 60px rgba(255,99,99,0.55))
+              drop-shadow(0 4px 16px rgba(0,0,0,0.9));
+    }
+    /* Subtitle: 霞鹜文楷 — calligraphic, pairs beautifully with serif title */
+    .intro-sub {
+      font-family: "LXGW WenKai", "Noto Serif SC", serif;
+      font-size: 60px;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      color: #fff;
+      text-shadow: 0 0 18px rgba(0,0,0,0.85),
+                   0 4px 24px rgba(0,0,0,0.7);
+    }
+
+    /* ============================================================
+       Scene 2 — 一秒
+       ============================================================ */
+    .one-second {
+      position: absolute; inset: 0;
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      align-items: center;
+      padding: 0 100px 80px;
+      gap: 60px;
+    }
+    .clock-frame {
+      position: relative;
+      width: 580px; height: 580px;
+      justify-self: center;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, rgba(20,20,30,0.7) 0%, rgba(8,8,16,0.4) 70%, transparent 100%);
+      box-shadow: 0 0 80px rgba(91, 192, 235, 0.25),
+                  inset 0 0 60px rgba(91, 192, 235, 0.18);
+      border: 2px solid rgba(91, 192, 235, 0.45);
+    }
+    .second-right {
+      display: flex; flex-direction: column;
+      gap: 28px; align-items: flex-start; padding-left: 40px;
+    }
+    .second-tag {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 24px;
+      letter-spacing: 0.5em;
+      color: var(--cyan);
+      text-shadow: 0 0 18px rgba(91,192,235,0.7),
+                   0 2px 8px rgba(0,0,0,0.85);
+    }
+    .second-headline {
+      font-family: "Noto Serif SC", "Source Han Serif SC", serif;
+      font-weight: 900;
+      font-size: 220px;
+      letter-spacing: 0.12em;
+      line-height: 0.95;
+      color: #fff;
+      text-shadow: 0 0 32px rgba(91, 192, 235, 0.8),
+                   0 0 80px rgba(91, 192, 235, 0.5),
+                   0 6px 16px rgba(0,0,0,0.9);
+    }
+    .second-stats {
+      display: flex; gap: 40px; margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      display: flex; flex-direction: column; gap: 6px;
+      padding: 18px 28px;
+      background: rgba(6, 8, 14, 0.78);
+      border-radius: 14px;
+      border-left: 4px solid var(--cyan);
+      min-width: 220px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .stat-num {
+      font-family: "Noto Sans SC";
+      font-size: 56px; font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 14px rgba(91,192,235,0.5);
+    }
+    .stat-label {
+      font-family: "Noto Sans SC";
+      font-size: 22px;
+      color: #cbd5e1;
+      letter-spacing: 0.2em;
+    }
+
+    /* ============================================================
+       Scene 3 — 一小时
+       ============================================================ */
+    .hour-stage {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 40px;
+      padding: 0 100px;
+    }
+    .hour-tag {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      letter-spacing: 0.55em;
+      color: var(--violet);
+      text-shadow: 0 0 18px rgba(157,141,241,0.7),
+                   0 2px 8px rgba(0,0,0,0.9);
+    }
+    /* Numeric headlines stay sans (digits read cleaner in heavy sans),
+       but with serif-friendly spacing */
+    .hour-headline {
+      font-family: "Noto Sans SC", system-ui, sans-serif;
+      font-weight: 900;
+      font-size: 320px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      color: #fff;
+      text-shadow: 0 0 40px rgba(157,141,241,0.85),
+                   0 0 90px rgba(157,141,241,0.5),
+                   0 6px 18px rgba(0,0,0,0.9);
+    }
+    .hour-unit {
+      font-family: "Noto Sans SC";
+      font-size: 52px; color: var(--violet);
+      letter-spacing: 0.2em;
+      text-shadow: 0 0 18px rgba(157,141,241,0.7);
+    }
+    .hour-stats-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 30px; margin-top: 16px; width: 100%; max-width: 1600px;
+    }
+    .hour-stat {
+      padding: 24px 30px;
+      background: rgba(6, 8, 14, 0.82);
+      border-radius: 16px;
+      border-top: 3px solid var(--violet);
+      text-align: left;
+      box-shadow: 0 10px 32px rgba(0,0,0,0.6);
+    }
+    .hour-stat .v {
+      font-family: "Noto Sans SC";
+      font-size: 46px; font-weight: 900; color: #fff;
+      letter-spacing: 0.02em;
+    }
+    .hour-stat .l {
+      font-family: "Noto Sans SC";
+      font-size: 22px; color: #94a3b8;
+      margin-top: 8px; letter-spacing: 0.1em;
+    }
+
+    /* ============================================================
+       Scene 4 — 一天
+       ============================================================ */
+    .day-stage {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 30px;
+    }
+    .day-card {
+      display: inline-block;
+      padding: 30px 80px;
+      background: rgba(6, 8, 14, 0.85);
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 14px 56px rgba(0,0,0,0.65);
+    }
+    .day-tag {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 30px; letter-spacing: 0.5em;
+      color: var(--sun);
+      text-shadow: 0 0 18px rgba(255,212,0,0.8);
+    }
+    .day-headline {
+      font-family: "Noto Serif SC", "Source Han Serif SC", serif;
+      font-weight: 900;
+      font-size: 96px;
+      letter-spacing: 0.16em;
+      line-height: 1;
+      margin-top: 12px;
+      color: #fff;
+      text-shadow: 0 0 32px rgba(255,212,0,0.9);
+    }
+    .day-big {
+      font-family: "Noto Sans SC";
+      font-weight: 900;
+      font-size: 360px;
+      line-height: 1;
+      color: #fff;
+      text-shadow: 0 0 60px rgba(255,139,94,0.85),
+                   0 0 120px rgba(255,139,94,0.5),
+                   0 8px 24px rgba(0,0,0,0.9);
+    }
+    .day-unit {
+      font-family: "Noto Sans SC";
+      font-size: 80px; color: var(--sun);
+      letter-spacing: 0.2em;
+      text-shadow: 0 0 18px rgba(255,212,0,0.7);
+    }
+    .day-sub {
+      font-family: "Noto Sans SC";
+      font-size: 46px; font-weight: 500;
+      color: #f4f1ea;
+      letter-spacing: 0.15em;
+      text-shadow: 0 0 18px rgba(0,0,0,0.95),
+                   0 4px 18px rgba(0,0,0,0.75);
+    }
+
+    /* ============================================================
+       Scene 5 — 一年
+       ============================================================ */
+    .year-stage {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 22px;
+      padding: 80px 100px;
+    }
+    .year-tag {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 26px; letter-spacing: 0.55em;
+      color: var(--red);
+      text-shadow: 0 0 18px rgba(255,99,99,0.8);
+    }
+    .year-headline {
+      font-family: "Noto Sans SC", system-ui, sans-serif;
+      font-weight: 900;
+      font-size: 240px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      color: #fff;
+      text-shadow: 0 0 40px rgba(255,99,99,0.85),
+                   0 0 90px rgba(255,99,99,0.5),
+                   0 8px 24px rgba(0,0,0,0.95);
+    }
+    .year-quote {
+      font-family: "LXGW WenKai", "Noto Serif SC", serif;
+      font-size: 46px; font-weight: 500;
+      color: #fff;
+      letter-spacing: 0.2em;
+      text-shadow: 0 0 18px rgba(0,0,0,0.95),
+                   0 4px 24px rgba(0,0,0,0.7);
+    }
+    .year-stats {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 18px 36px; width: 100%; max-width: 1500px; margin-top: 12px;
+    }
+    .year-row {
+      display: flex; align-items: baseline; gap: 18px;
+      padding: 18px 26px;
+      background: rgba(6, 8, 14, 0.82);
+      border-radius: 14px;
+      border-left: 4px solid var(--red);
+    }
+    .year-row .num {
+      font-family: "Noto Sans SC";
+      font-size: 56px; font-weight: 900;
+      color: var(--amber);
+      text-shadow: 0 0 18px rgba(255,139,94,0.6);
+    }
+    .year-row .lbl {
+      font-family: "Noto Sans SC";
+      font-size: 26px; color: #f4f1ea;
+      letter-spacing: 0.1em;
+    }
+
+    /* ============================================================
+       Scene 6 — 结语
+       ============================================================ */
+    .end-stage {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 50px;
+    }
+    .end-quote {
+      font-family: "LXGW WenKai", "Noto Serif SC", serif;
+      font-size: 60px;
+      font-weight: 500;
+      color: #fff;
+      letter-spacing: 0.25em;
+      line-height: 1.6;
+      max-width: 1400px;
+      text-align: center;
+      text-shadow: 0 0 28px rgba(0,0,0,0.9),
+                   0 6px 32px rgba(0,0,0,0.7);
+    }
+    /* Closing title: 思源宋体 Black with wide tracking — the most
+       elegant Chinese typography choice for a four-character chéngyǔ. */
+    .end-title {
+      font-family: "Noto Serif SC", "Source Han Serif SC", serif;
+      font-weight: 900;
+      font-size: 280px;
+      line-height: 1;
+      color: #fff;
+      letter-spacing: 0.16em;
+      text-shadow: 0 0 28px #FF6363,
+                   0 0 60px rgba(255,99,99,0.7),
+                   0 0 110px rgba(255,99,99,0.5),
+                   0 6px 18px rgba(0,0,0,0.95);
+    }
+    .end-eng {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 44px;
+      letter-spacing: 0.7em;
+      color: #fff;
+      text-shadow: 0 0 18px rgba(255,212,0,0.7),
+                   0 4px 16px rgba(0,0,0,0.9);
+    }
+    .end-attrib {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 22px; letter-spacing: 0.5em;
+      color: #cbd5e1;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    }
+
+    /* Corner UI */
+    .corner-mark {
+      position: absolute;
+      top: 50px; left: 60px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 18px;
+      letter-spacing: 0.35em;
+      color: #cbd5e1;
+      opacity: 0.7;
+      z-index: 30;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    }
+    .corner-mark::before { content: "● "; color: var(--red); }
+    .timecode {
+      position: absolute;
+      top: 50px; right: 60px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 16px;
+      letter-spacing: 0.3em;
+      color: #94a3b8;
+      opacity: 0.8;
+      z-index: 30;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    }
+    .progress-track {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 3px;
+      z-index: 31;
+      background: rgba(255,255,255,0.06);
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #FFD400, #FF8B5E, #FF6363);
+      width: 0;
+      transform-origin: left center;
+      box-shadow: 0 0 12px rgba(255, 139, 94, 0.7);
+    }
+  </style>
+</head>
+<body class="mvm-preview">
+
+  <!-- ============================================================
+       Composition: 时间飞逝 v2 · 42s · 30fps · 1920x1080
+       Showcases: meta-balls, aurora, liquid-ether, prismatic-burst,
+                  magnet-lines, lightning, ribbons, electric-border,
+                  image-trail, odometer count-up, mask-text, wave-text,
+                  scramble-text, 10 outer-animation presets, scene-scrim
+                  on every scene for guaranteed text readability.
+       ============================================================ -->
+  <div id="stage"
+       data-composition-id="time-flies-v2"
+       data-width="1920" data-height="1080"
+       data-fps="30" data-duration="42">
+
+    <!-- ======== Backgrounds (shader timeline) ======== -->
+
+    <!-- 0-6s: meta-balls warm (intro) -->
+    <div data-clip data-start="0" data-duration="6.0"
+         data-animation="fadeIn" data-in-duration="0.6"
+         data-animation-out="fadeOut" data-out-duration="0.4"
+         data-background="meta-balls"
+         data-colors="#1a0a08,#FF6363,#FFD400,#0a0408"
+         data-intensity="1.0" data-scale="1.1" data-seed="3"
+         style="opacity:0;"></div>
+
+    <!-- 5.5-13s: aurora cool (一秒) -->
+    <div data-clip data-start="5.6" data-duration="6.8"
+         data-animation="fadeIn" data-in-duration="0.5"
+         data-animation-out="fadeOut" data-out-duration="0.4"
+         data-background="aurora"
+         data-colors="#0a1438,#5BC0EB,#9d8df1,#0a1438"
+         style="opacity:0;"></div>
+
+    <!-- 12.5-20s: liquid-ether deep purple (一小时) -->
+    <div data-clip data-start="12.5" data-duration="7.6"
+         data-animation="fadeIn" data-in-duration="0.5"
+         data-animation-out="fadeOut" data-out-duration="0.4"
+         data-background="liquid-ether"
+         data-colors="#080418,#2a1c5a,#5b86e5,#9d8df1"
+         data-intensity="0.9" data-scale="1.2"
+         style="opacity:0;"></div>
+
+    <!-- 20-28s: prismatic-burst warm gold (一天) -->
+    <div data-clip data-start="20.0" data-duration="8.0"
+         data-animation="fadeIn" data-in-duration="0.5"
+         data-animation-out="fadeOut" data-out-duration="0.4"
+         data-background="prismatic-burst"
+         data-colors="#FF8B5E,#FFD400,#FF6363,#1a0a08"
+         data-intensity="0.8"
+         style="opacity:0;"></div>
+
+    <!-- 28-35.5s: magnet-lines red (一年) -->
+    <div data-clip data-start="28.0" data-duration="7.6"
+         data-animation="fadeIn" data-in-duration="0.5"
+         data-animation-out="fadeOut" data-out-duration="0.4"
+         data-background="magnet-lines"
+         data-colors="#FF6363,#FFD400,#FF8B5E,#9d8df1"
+         data-poles="4" data-gap="48" data-length="24"
+         data-bg="#080612"
+         style="opacity:0;"></div>
+
+    <!-- 35.5-39s: lightning (climax to 结语) -->
+    <div data-clip data-start="35.4" data-duration="3.7"
+         data-animation="fadeIn" data-in-duration="0.4"
+         data-animation-out="fadeOut" data-out-duration="0.4"
+         data-background="lightning"
+         data-colors="#FFFFFF,#FFE87A,#FF6363,#040810"
+         data-intensity="1.0" data-seed="7"
+         style="opacity:0;"></div>
+
+    <!-- 38.8-42s: ribbons (final calm) -->
+    <div data-clip data-start="38.8" data-duration="3.2"
+         data-animation="fadeIn" data-in-duration="0.5"
+         data-background="ribbons"
+         data-colors="#FF6363,#FFD400,#5BC0EB,#9d8df1,#2af598"
+         data-count="6" data-bg="#06060f"
+         style="opacity:0;"></div>
+
+    <!-- Persistent grain -->
+    <div data-background="noise" data-strength="12"
+         style="z-index: 31; mix-blend-mode: overlay; opacity: 0.15;"></div>
+
+
+    <!-- ======== Scene transitions ======== -->
+    <div data-transition="pixel-dissolve" data-start="5.5" data-duration="0.7"
+         data-color="#080418" data-tile="44"></div>
+    <div data-transition="wipe-up" data-start="12.4" data-duration="0.6"
+         data-color="#080418"></div>
+    <div data-transition="iris" data-start="19.8" data-duration="0.9"
+         data-color="#1a0a08" data-easing="easeInOutQuart"></div>
+    <div data-transition="flash" data-start="27.9" data-duration="0.55"
+         data-color="#ffffff"></div>
+    <div data-transition="glitch" data-start="35.3" data-duration="0.6"></div>
+    <div data-transition="shape" data-start="38.6" data-duration="0.7"
+         data-color="#06060f" data-easing="easeInOutCubic"></div>
+
+
+    <!-- =====================================================
+         SCENE 1  ·  0–5.5s  ·  Intro · 时间飞逝
+         ===================================================== -->
+    <div class="intro-stage scene-scrim scene-scrim-strong"
+         data-clip data-hide-mode="visibility"
+         data-start="0" data-duration="5.5">
+
+      <p class="intro-eyebrow"
+         data-clip data-start="0.3" data-duration="5.0"
+         data-text-animation="scramble-text" data-anim-duration="1.6">TIME · FLIES · 万物有时</p>
+
+      <h1 class="intro-title text-sun"
+          data-clip data-start="0.9" data-duration="4.4"
+          data-text-animation="split-text"
+          data-stagger="0.08" data-char-duration="1.0"
+          data-travel="160" data-easing="springBouncy">时间飞逝</h1>
+
+      <p class="intro-sub"
+         data-clip data-start="2.4" data-duration="2.9"
+         data-animation="unmaskUp" data-in-duration="0.8"
+         data-easing="easeInOutQuart"
+         data-animation-out="fadeOut" data-out-duration="0.4">「春水初生，春林初盛」</p>
+    </div>
+
+
+    <!-- =====================================================
+         SCENE 2  ·  5.5–12.5s  ·  一秒 · clock + 3 stats
+         ===================================================== -->
+    <div class="scene-scrim scene-scrim-soft"
+         data-clip data-hide-mode="visibility"
+         data-start="5.6" data-duration="6.8"
+         style="position: absolute; inset: 0; z-index: 10;">
+
+      <div class="one-second">
+
+        <!-- LEFT: analog clock face -->
+        <div class="clock-frame"
+             data-clip data-start="5.9" data-duration="6.4"
+             data-animation="zoomIn" data-in-duration="1.0"
+             data-easing="springSmooth"
+             data-animation-out="fadeOut" data-out-duration="0.5"
+             style="opacity:0;">
+          <div data-fx="clock" data-speed="60"
+               style="position:absolute; inset:0;"></div>
+        </div>
+
+        <!-- RIGHT: text column -->
+        <div class="second-right">
+          <p class="second-tag"
+             data-clip data-start="6.0" data-duration="6.3"
+             data-text-animation="type-text" data-cps="14">// ONE · SECOND</p>
+
+          <h2 class="second-headline"
+              data-clip data-start="6.5" data-duration="5.8"
+              data-text-animation="mask-text"
+              data-mask-from="center"
+              data-anim-duration="1.0"
+              data-easing="easeInOutExpo">一 秒</h2>
+
+          <div class="second-stats">
+            <!-- stat 1: cubeIn -->
+            <div class="stat-card"
+                 data-clip data-start="7.6" data-duration="4.7"
+                 data-animation="cubeIn" data-in-duration="0.8"
+                 data-easing="easeOutQuart"
+                 data-animation-out="fadeOut" data-out-duration="0.4"
+                 style="opacity:0;">
+              <span class="stat-num"
+                    data-clip data-start="7.8" data-duration="4.4"
+                    data-text-animation="count-up" data-odometer="true"
+                    data-from="0" data-to="463"
+                    data-anim-duration="1.1"
+                    data-easing="springSmooth">0</span>
+              <span class="stat-label">地球前进的米数</span>
+            </div>
+
+            <!-- stat 2: flipInY -->
+            <div class="stat-card"
+                 data-clip data-start="8.1" data-duration="4.2"
+                 data-animation="flipInY" data-in-duration="0.8"
+                 data-easing="springSnap"
+                 data-animation-out="fadeOut" data-out-duration="0.4"
+                 style="opacity:0;">
+              <span class="stat-num"
+                    data-clip data-start="8.3" data-duration="3.9"
+                    data-text-animation="count-up"
+                    data-from="0" data-to="72"
+                    data-anim-duration="1.0"
+                    data-easing="springSmooth">0</span>
+              <span class="stat-label">心跳次数 / 分钟</span>
+            </div>
+
+            <!-- stat 3: dropIn -->
+            <div class="stat-card"
+                 data-clip data-start="8.6" data-duration="3.7"
+                 data-animation="dropIn" data-in-duration="0.9"
+                 data-easing="easeOutQuart"
+                 data-animation-out="fadeOut" data-out-duration="0.4"
+                 style="opacity:0;">
+              <span class="stat-num"
+                    data-clip data-start="8.9" data-duration="3.4"
+                    data-text-animation="count-up"
+                    data-from="0" data-to="17"
+                    data-anim-duration="0.9"
+                    data-easing="springSmooth">0</span>
+              <span class="stat-label">呼吸次数 / 分钟</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- =====================================================
+         SCENE 3  ·  12.5–20s  ·  一小时 · 3,600 + 3 stats
+         ===================================================== -->
+    <div class="scene-scrim"
+         data-clip data-hide-mode="visibility"
+         data-start="12.5" data-duration="7.5"
+         style="position: absolute; inset: 0; z-index: 10;">
+
+      <div class="hour-stage">
+
+        <p class="hour-tag"
+           data-clip data-start="12.8" data-duration="7.0"
+           data-text-animation="scramble-text" data-anim-duration="1.4">// ONE · HOUR</p>
+
+        <!-- Headline row: 3,600 + 秒 -->
+        <div style="display: flex; align-items: baseline; gap: 28px;">
+          <span class="hour-headline"
+                data-clip data-start="13.2" data-duration="6.5"
+                data-text-animation="count-up" data-odometer="true"
+                data-from="0" data-to="3600"
+                data-anim-duration="1.6"
+                data-separator=","
+                data-easing="easeOutExpo">0</span>
+          <span class="hour-unit"
+                data-clip data-start="14.0" data-duration="5.8"
+                data-animation="unmaskRight" data-in-duration="0.7"
+                data-easing="easeInOutQuart">秒</span>
+        </div>
+
+        <!-- 3 stats: each with a DIFFERENT entrance preset -->
+        <div class="hour-stats-row">
+          <div class="hour-stat"
+               data-clip data-start="14.8" data-duration="4.8"
+               data-animation="magneticIn" data-in-duration="0.8"
+               data-easing="springBouncy"
+               data-animation-out="fadeOut" data-out-duration="0.5"
+               style="opacity:0;">
+            <div class="v">108,000 km</div>
+            <div class="l">地球绕日飞行</div>
+          </div>
+
+          <div class="hour-stat"
+               data-clip data-start="15.3" data-duration="4.3"
+               data-animation="skewIn" data-in-duration="0.8"
+               data-easing="easeOutBack"
+               data-animation-out="fadeOut" data-out-duration="0.5"
+               style="opacity:0;">
+            <div class="v">6,000 万条</div>
+            <div class="l">互联网新增内容</div>
+          </div>
+
+          <div class="hour-stat"
+               data-clip data-start="15.8" data-duration="3.8"
+               data-animation="slideBlurIn" data-in-duration="0.9"
+               data-easing="springSmooth"
+               data-animation-out="fadeOut" data-out-duration="0.5"
+               style="opacity:0;">
+            <div class="v">3,600 亿</div>
+            <div class="l">细胞更新数量</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- =====================================================
+         SCENE 4  ·  20–28s  ·  一天 · 86,400 + electric-border card
+         ===================================================== -->
+    <div class="scene-scrim"
+         data-clip data-hide-mode="visibility"
+         data-start="20.0" data-duration="7.9"
+         style="position: absolute; inset: 0; z-index: 10;">
+
+      <div class="day-stage">
+
+        <!-- Top card with electric-border halo -->
+        <div class="day-card"
+             data-effect="electric-border"
+             data-color="#FF6363" data-color2="#FFD400" data-color3="#FF8B5E"
+             data-intensity="1.2" data-speed="1.5" data-padding="20"
+             data-border-radius="22"
+             data-clip data-start="20.3" data-duration="7.4"
+             data-animation="kenBurnsIn" data-in-duration="1.0"
+             data-easing="easeOutQuart"
+             data-animation-out="fadeOut" data-out-duration="0.5"
+             style="opacity:0;">
+          <p class="day-tag">ONE · DAY</p>
+          <h2 class="day-headline">一 天</h2>
+        </div>
+
+        <!-- Big odometer number -->
+        <div style="display: flex; align-items: baseline; gap: 36px;">
+          <span class="day-big"
+                data-clip data-start="21.2" data-duration="6.5"
+                data-text-animation="count-up" data-odometer="true"
+                data-from="0" data-to="86400"
+                data-anim-duration="2.0"
+                data-separator=","
+                data-easing="easeOutExpo">0</span>
+          <span class="day-unit"
+                data-clip data-start="22.4" data-duration="5.3"
+                data-animation="unmaskRight" data-in-duration="0.7"
+                data-easing="easeInOutQuart">秒</span>
+        </div>
+
+        <!-- Reflective subline -->
+        <p class="day-sub"
+           data-clip data-start="23.8" data-duration="3.9"
+           data-text-animation="wave-text"
+           data-stagger="0.05" data-amplitude="28" data-wave="0.9"
+           data-easing="easeOutQuart">是一段 · 完整的时光</p>
+      </div>
+    </div>
+
+
+    <!-- =====================================================
+         SCENE 5  ·  28–35.5s  ·  一年 · 525,600 minutes
+         ===================================================== -->
+    <div class="scene-scrim"
+         data-clip data-hide-mode="visibility"
+         data-start="28.0" data-duration="7.5"
+         style="position: absolute; inset: 0; z-index: 10;">
+
+      <div class="year-stage">
+
+        <p class="year-tag"
+           data-clip data-start="28.3" data-duration="7.0"
+           data-text-animation="scramble-text" data-anim-duration="1.4">// FIVE · HUNDRED · THOUSAND · MINUTES</p>
+
+        <!-- Headline: 525,600 minutes -->
+        <div style="display: flex; align-items: baseline; gap: 28px;">
+          <span class="year-headline"
+                data-clip data-start="28.7" data-duration="6.5"
+                data-text-animation="count-up" data-odometer="true"
+                data-from="0" data-to="525600"
+                data-anim-duration="1.8"
+                data-separator=","
+                data-easing="easeOutExpo">0</span>
+          <span class="year-tag"
+                data-clip data-start="29.7" data-duration="5.5"
+                data-animation="unmaskRight" data-in-duration="0.7"
+                style="color:var(--amber); font-size: 64px;">分 钟</span>
+        </div>
+
+        <p class="year-quote"
+           data-clip data-start="30.6" data-duration="4.6"
+           data-text-animation="wave-text"
+           data-stagger="0.05" data-amplitude="22" data-wave="0.7">「春去秋来，岁岁年年」</p>
+
+        <!-- 4 stats grid — each with a different entrance -->
+        <div class="year-stats">
+          <div class="year-row"
+               data-effect="image-trail"
+               data-trail-count="3" data-trail-stride="0.07" data-trail-decay="0.55"
+               data-clip data-start="31.6" data-duration="3.6"
+               data-animation="unmaskLeft" data-in-duration="0.7"
+               data-easing="easeInOutQuart"
+               data-animation-out="fadeOut" data-out-duration="0.4">
+            <span class="num">365</span>
+            <span class="lbl">个 早 晨</span>
+          </div>
+
+          <div class="year-row"
+               data-effect="image-trail"
+               data-trail-count="3" data-trail-stride="0.07" data-trail-decay="0.55"
+               data-clip data-start="32.0" data-duration="3.2"
+               data-animation="unmaskRight" data-in-duration="0.7"
+               data-easing="easeInOutQuart"
+               data-animation-out="fadeOut" data-out-duration="0.4">
+            <span class="num">8,760</span>
+            <span class="lbl">个 小 时</span>
+          </div>
+
+          <div class="year-row"
+               data-effect="image-trail"
+               data-trail-count="3" data-trail-stride="0.07" data-trail-decay="0.55"
+               data-clip data-start="32.4" data-duration="2.8"
+               data-animation="unmaskLeft" data-in-duration="0.7"
+               data-easing="easeInOutQuart"
+               data-animation-out="fadeOut" data-out-duration="0.4">
+            <span class="num">31,536,000</span>
+            <span class="lbl">秒 钟</span>
+          </div>
+
+          <div class="year-row"
+               data-effect="image-trail"
+               data-trail-count="3" data-trail-stride="0.07" data-trail-decay="0.55"
+               data-clip data-start="32.8" data-duration="2.4"
+               data-animation="unmaskRight" data-in-duration="0.7"
+               data-easing="easeInOutQuart"
+               data-animation-out="fadeOut" data-out-duration="0.4">
+            <span class="num">∞</span>
+            <span class="lbl">个 当 下</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- =====================================================
+         SCENE 6  ·  35.5–42s  ·  结语 · 活在当下
+         ===================================================== -->
+    <div class="scene-scrim scene-scrim-strong"
+         data-clip data-hide-mode="visibility"
+         data-start="35.5" data-duration="6.5"
+         style="position: absolute; inset: 0; z-index: 10;">
+
+      <div class="end-stage">
+
+        <!-- Opening line: 古风诗句 -->
+        <p class="end-quote"
+           data-clip data-start="35.9" data-duration="2.6"
+           data-text-animation="wave-text"
+           data-stagger="0.08" data-amplitude="28" data-wave="0.7"
+           data-easing="easeOutQuart">「未来何须等，当下即此刻」</p>
+
+        <!-- The hero closing line -->
+        <h1 class="end-title"
+            data-clip data-start="37.0" data-duration="5.0"
+            data-animation="dropIn" data-in-duration="1.0"
+            data-easing="easeOutQuart">活在当下</h1>
+
+        <!-- English -->
+        <p class="end-eng"
+           data-clip data-start="38.4" data-duration="3.6"
+           data-text-animation="scramble-text"
+           data-anim-duration="1.4">TIME · FLIES</p>
+
+        <!-- Attribution -->
+        <p class="end-attrib"
+           data-clip data-start="40.2" data-duration="1.8"
+           data-animation="unmaskUp" data-in-duration="0.6"
+           data-easing="easeInOutQuart">— A MOTION VIDEO MAKER PIECE</p>
+      </div>
+    </div>
+
+
+    <!-- ======== Persistent UI ======== -->
+    <div class="corner-mark"
+         data-clip data-start="0" data-duration="42"
+         data-animation="fadeIn" data-in-duration="1.2"
+         data-animation-out="fadeOut" data-out-duration="0.5">TIME · FLIES</div>
+
+    <div class="timecode"
+         data-clip data-start="0.6" data-duration="41.4"
+         data-animation="fadeIn" data-in-duration="1.5"
+         data-animation-out="fadeOut" data-out-duration="0.5">2026.05 · 42 SEC</div>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="mvm-progress"></div>
+    </div>
+
+    <div class="frame" style="opacity: 0.35; z-index: 32;"></div>
+  </div>
+
+  <script src="../../runtime/spring.js"></script>
+  <script src="../../runtime/timeline.js"></script>
+  <script src="../../runtime/components.js"></script>
+  <script src="../../runtime/shaders.js"></script>
+  <script src="../../runtime/transitions.js"></script>
+  <script src="../../runtime/effects.js"></script>
+  <script>
+    window.addEventListener('mvm-seek', (e) => {
+      const t = e.detail.time;
+      const meta = window.__mvm.meta();
+      const bar = document.getElementById('mvm-progress');
+      if (bar) bar.style.transform = `scaleX(${Math.min(1, t / meta.duration)})`;
+    });
+  </script>
+</body>
+</html>

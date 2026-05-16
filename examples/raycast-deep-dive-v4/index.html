@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Raycast 2.0 · 技术深度解读 v2</title>
+  <link rel="stylesheet" href="../../runtime/styles.css" />
+  <link rel="stylesheet" href="../../assets/fonts/fonts.css" />
+  <style>
+    :root {
+      --raycast-red:    #FF6363;
+      --raycast-amber:  #FF8B5E;
+      --raycast-gold:   #FFD400;
+      --raycast-cyan:   #5BC0EB;
+      --raycast-blue:   #5b86e5;
+      --raycast-purple: #9d8df1;
+      --raycast-mint:   #2af598;
+      --ink:            #0a0a0f;
+      --ink-2:          #15151c;
+      --rust:           #C95F2D;
+    }
+
+    .text-raycast {
+      background: linear-gradient(110deg, #FF6363 0%, #FF8B5E 40%, #FFD400 100%);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .text-blue {
+      background: linear-gradient(110deg, #5BC0EB, #5b86e5, #9d8df1);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .scene { padding: 0 100px; }
+    .center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 32px; }
+
+    /* Scene 1 */
+    .hero-eyebrow {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      letter-spacing: 0.6em;
+      opacity: 0.85;
+      color: var(--raycast-red);
+      text-shadow: 0 0 18px rgba(255,99,99,0.5);
+    }
+    .hero-title {
+      font-family: "Noto Sans SC", system-ui;
+      font-weight: 900;
+      font-size: 240px;
+      letter-spacing: -0.04em;
+      line-height: 0.9;
+      white-space: nowrap;
+      filter: drop-shadow(0 8px 60px rgba(255, 99, 99, 0.5));
+    }
+    .hero-sub {
+      font-family: "Noto Sans SC", system-ui;
+      font-weight: 400;
+      font-size: 50px;
+      letter-spacing: 0.18em;
+      color: #f7f5ef;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.6);
+    }
+    .hero-mono {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 24px;
+      letter-spacing: 0.4em;
+      color: #cbd5e1;
+    }
+
+    /* Scene 2: v1 → v2 — centered flex with explicit max-width so the
+       cards never overflow when long text labels are present */
+    .compare-stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 100px;
+      gap: 80px;
+      flex-wrap: nowrap;
+    }
+    .compare-card {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 22px; padding: 50px 60px;
+      flex: 0 1 auto;
+      min-width: 460px; max-width: 720px;
+      white-space: nowrap;
+    }
+    .compare-version {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 32px;
+      letter-spacing: 0.3em;
+      opacity: 0.7;
+    }
+    .compare-platforms {
+      font-family: "Noto Sans SC";
+      font-size: 240px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .compare-tag {
+      font-family: "Noto Sans SC";
+      font-size: 26px;
+      letter-spacing: 0.16em;
+      opacity: 0.92;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.85);
+      white-space: nowrap;
+    }
+    .compare-arrow {
+      font-size: 120px;
+      font-weight: 100;
+      color: var(--raycast-red);
+      flex: 0 0 auto;
+      filter: drop-shadow(0 0 40px rgba(255, 99, 99, 0.8));
+    }
+    .compare-caption {
+      position: absolute;
+      top: 130px;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: "LXGW WenKai", serif;
+      font-size: 38px;
+      letter-spacing: 0.35em;
+      color: #f7f5ef;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.65);
+    }
+
+    /* Scene 3 X-Ray */
+    .codename-stage {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px;
+    }
+    .codename-backdrop {
+      position: absolute;
+      top: 30%; left: 50%;
+      transform: translate(-50%, 0);
+      width: 1400px; height: 600px;
+      background: radial-gradient(ellipse, rgba(8,8,14,0.85) 0%, rgba(8,8,14,0.6) 50%, rgba(8,8,14,0) 90%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    .codename-tag {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 30px;
+      letter-spacing: 0.5em;
+      color: var(--raycast-cyan);
+      opacity: 0.95;
+      text-shadow: 0 0 20px rgba(91, 192, 235, 0.75), 0 2px 8px rgba(0,0,0,0.8);
+    }
+    .codename-main {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 700;
+      font-size: 320px;
+      letter-spacing: 0.05em;
+      line-height: 1;
+      filter: drop-shadow(0 8px 60px rgba(255, 99, 99, 0.7));
+    }
+    .codename-expand {
+      font-family: "Noto Sans SC";
+      font-weight: 500;
+      font-size: 48px;
+      letter-spacing: 0.3em;
+      color: #f7f5ef;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.95), 0 0 30px rgba(0,0,0,0.8);
+    }
+    .codename-zh {
+      font-family: "LXGW WenKai", serif;
+      font-size: 36px;
+      letter-spacing: 0.3em;
+      color: #e2e8f0;
+      margin-top: 8px;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.95);
+    }
+
+    /* Scene 4 stack */
+    .stack-grid {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 0 100px; gap: 30px;
+    }
+    .stack-header {
+      font-family: "Noto Sans SC";
+      font-size: 40px;
+      letter-spacing: 0.25em;
+      opacity: 0.95;
+      margin-bottom: 32px;
+      text-align: center;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.7);
+    }
+    .stack-options {
+      display: flex; flex-direction: row;
+      gap: 36px; width: 100%;
+      justify-content: center;
+    }
+    .stack-option {
+      flex: 1 1 0; max-width: 480px;
+      padding: 32px 28px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(10, 10, 16, 0.65);
+      border-radius: 18px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      text-align: center;
+      display: flex; flex-direction: column;
+      gap: 14px; align-items: center;
+    }
+    .stack-option.chosen {
+      background: rgba(255, 99, 99, 0.18);
+      border: 2px solid var(--raycast-red);
+      box-shadow: 0 0 80px rgba(255, 99, 99, 0.55), inset 0 0 30px rgba(255, 99, 99, 0.15);
+    }
+    .stack-mark {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 22px;
+      letter-spacing: 0.3em;
+      opacity: 0.65;
+    }
+    .stack-name {
+      font-family: "Noto Sans SC", system-ui;
+      font-weight: 900;
+      font-size: 64px;
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+    .stack-verdict {
+      font-family: "LXGW WenKai", serif;
+      font-size: 28px;
+      letter-spacing: 0.15em;
+      opacity: 0.85;
+    }
+    .stack-final {
+      position: absolute;
+      bottom: 100px;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: "Noto Sans SC";
+      font-size: 30px;
+      letter-spacing: 0.35em;
+      color: var(--raycast-red);
+      text-shadow: 0 2px 16px rgba(0,0,0,0.8);
+    }
+
+    /* Scene 5 architecture */
+    .arch-stage {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 22px; padding: 0 200px;
+    }
+    .arch-title {
+      font-family: "Noto Sans SC";
+      font-size: 64px; font-weight: 900;
+      letter-spacing: 0.04em;
+      margin-bottom: 32px; text-align: center;
+      filter: drop-shadow(0 4px 20px rgba(255,99,99,0.4));
+    }
+    .arch-layer {
+      width: 100%; max-width: 1320px;
+      padding: 28px 48px;
+      border-radius: 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 32px; align-items: center;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(10, 10, 16, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    .arch-layer .badge {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 700; font-size: 22px;
+      letter-spacing: 0.1em;
+      padding: 8px 16px; border-radius: 6px;
+      min-width: 90px; text-align: center;
+    }
+    .arch-layer .name {
+      font-family: "Noto Sans SC";
+      font-weight: 700; font-size: 42px;
+      letter-spacing: 0.04em;
+    }
+    .arch-layer .desc {
+      font-family: "LXGW WenKai", serif;
+      font-size: 26px;
+      letter-spacing: 0.15em;
+      opacity: 0.78;
+      text-align: right;
+    }
+    .arch-layer.host  .badge { background: var(--raycast-red);   color: white; }
+    .arch-layer.web   .badge { background: var(--raycast-cyan);  color: var(--ink); }
+    .arch-layer.node  .badge { background: var(--raycast-mint);  color: var(--ink); }
+    .arch-layer.rust  .badge { background: var(--rust);          color: white; }
+    .arch-layer.host  { border-left: 4px solid var(--raycast-red); box-shadow: -4px 0 30px rgba(255,99,99,0.3), 0 4px 24px rgba(0,0,0,0.5); }
+    .arch-layer.web   { border-left: 4px solid var(--raycast-cyan); box-shadow: -4px 0 30px rgba(91,192,235,0.25), 0 4px 24px rgba(0,0,0,0.5); }
+    .arch-layer.node  { border-left: 4px solid var(--raycast-mint); box-shadow: -4px 0 30px rgba(42,245,152,0.2), 0 4px 24px rgba(0,0,0,0.5); }
+    .arch-layer.rust  { border-left: 4px solid var(--rust); box-shadow: -4px 0 30px rgba(201,95,45,0.3), 0 4px 24px rgba(0,0,0,0.5); }
+
+    /* Scene 6 memory */
+    .memory-stage {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 48px;
+    }
+    .memory-eyebrow {
+      font-family: "Noto Sans SC";
+      font-size: 36px;
+      letter-spacing: 0.4em;
+      opacity: 0.95;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.7);
+    }
+    .memory-row {
+      display: flex; flex-direction: row;
+      align-items: center; gap: 80px;
+    }
+    .memory-block {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 14px;
+    }
+    .memory-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 32px;
+      letter-spacing: 0.25em;
+      opacity: 0.85;
+    }
+    .memory-value {
+      font-family: "Noto Sans SC";
+      font-weight: 900;
+      font-size: 200px;
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+      filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+    }
+    .memory-unit {
+      font-size: 64px; font-weight: 400;
+      opacity: 0.8; margin-left: 8px;
+    }
+    .memory-arrow {
+      font-size: 120px; font-weight: 100;
+      color: var(--raycast-red);
+      filter: drop-shadow(0 0 35px rgba(255,99,99,0.7));
+    }
+    .memory-note {
+      font-family: "LXGW WenKai", serif;
+      font-size: 32px;
+      letter-spacing: 0.3em;
+      opacity: 0.85;
+      margin-top: 24px;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.7);
+    }
+    .memory-bonus {
+      font-family: "Noto Sans SC";
+      font-size: 30px;
+      letter-spacing: 0.2em;
+      color: var(--raycast-mint);
+      text-shadow: 0 0 18px rgba(42,245,152,0.5);
+    }
+
+    /* Scene 7 closing */
+    .quote-stage {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 0 120px;
+      gap: 40px;
+    }
+    .quote-mark {
+      font-family: "Noto Serif SC", serif;
+      font-size: 200px;
+      font-weight: 900;
+      line-height: 0.5;
+      color: var(--raycast-red);
+      opacity: 0.55;
+      filter: drop-shadow(0 0 40px rgba(255,99,99,0.5));
+    }
+    .quote-text {
+      font-family: "LXGW WenKai", "Noto Serif SC", serif;
+      font-size: 80px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      line-height: 1.4;
+      max-width: 1500px;
+      text-align: center;
+      text-shadow: 0 2px 24px rgba(0,0,0,0.85);
+    }
+    .quote-attrib {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      letter-spacing: 0.4em;
+      opacity: 0.7;
+      margin-top: 24px;
+      text-shadow: 0 0 12px rgba(0,0,0,0.5);
+    }
+    .closing-title {
+      font-family: "Noto Sans SC";
+      font-weight: 900;
+      font-size: 220px;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      filter: drop-shadow(0 4px 50px rgba(255,99,99,0.7));
+    }
+    .closing-meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 30px;
+      letter-spacing: 0.5em;
+      opacity: 0.85;
+      margin-top: 32px;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+    }
+    .closing-platforms {
+      display: flex;
+      gap: 60px;
+      align-items: center;
+      margin-top: 24px;
+    }
+    .closing-platforms span {
+      font-family: "Noto Sans SC";
+      font-size: 34px;
+      letter-spacing: 0.3em;
+      padding: 12px 32px;
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* Persistent UI */
+    .corner-tag {
+      position: absolute;
+      top: 60px; left: 60px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 20px;
+      letter-spacing: 0.3em;
+      opacity: 0.6;
+      z-index: 25;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+    }
+    .corner-tag::before {
+      content: "● ";
+      color: var(--raycast-red);
+    }
+    .source-tag {
+      position: absolute;
+      top: 60px; right: 60px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 18px;
+      letter-spacing: 0.25em;
+      opacity: 0.5;
+      z-index: 25;
+      text-transform: uppercase;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+    }
+    .progress-track {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 3px;
+      z-index: 26;
+      background: rgba(255,255,255,0.06);
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #FF6363, #FF8B5E, #FFD400);
+      width: 0;
+      transform-origin: left center;
+      box-shadow: 0 0 12px rgba(255, 99, 99, 0.7);
+    }
+  </style>
+</head>
+<body class="mvm-preview">
+
+  <!-- ============================================================
+       Composition: Raycast 2.0 v2 · 40s · 30fps · 1920x1080
+       Upgrades over v1:
+         · spring physics on every text/element entrance
+         · 6 fragment-shader backgrounds replace canvas-only bg
+         · scene-to-scene transitions (flash / pixel-dissolve / iris / wipe)
+       ============================================================ -->
+  <div id="stage"
+       data-composition-id="raycast-deep-dive-v4"
+       data-width="1920" data-height="1080"
+       data-fps="30" data-duration="40">
+
+    <!-- ======== Shader background timeline ======== -->
+    <!-- 0-9s: liquid-ether — cool deep purple/teal so the warm gradient
+         hero title can pop with high contrast against it -->
+    <div data-clip data-start="0" data-duration="9.5"
+         data-animation="fadeIn" data-in-duration="0.7"
+         data-animation-out="fadeOut" data-out-duration="0.5"
+         data-background="liquid-ether"
+         data-colors="#06061a,#1a1240,#2a2070,#0a3055"
+         data-intensity="1.0" data-scale="1.3"
+         style="opacity:0;"></div>
+
+    <!-- Soft vignette to give the centered hero text breathing room -->
+    <div data-clip data-start="0.0" data-duration="4.2"
+         data-animation="fadeIn" data-in-duration="0.6"
+         data-animation-out="fadeOut" data-out-duration="0.5"
+         style="position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0;
+                background: radial-gradient(ellipse 75% 55% at center, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 50%, transparent 100%);"></div>
+
+    <!-- 8.5-15s: lightning (X-RAY codename) -->
+    <div data-clip data-start="8.6" data-duration="6.4"
+         data-animation="fadeIn" data-in-duration="0.5"
+         data-animation-out="fadeOut" data-out-duration="0.5"
+         data-background="lightning"
+         data-colors="#FFFFFF,#A9D1FF,#FF6363,#040810"
+         data-intensity="1.0" data-seed="3"
+         style="opacity:0;"></div>
+
+    <!-- Soft dark vignette to lift X-RAY text -->
+    <div data-clip data-start="8.7" data-duration="6.2"
+         data-animation="fadeIn" data-in-duration="0.5"
+         data-animation-out="fadeOut" data-out-duration="0.5"
+         style="position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0;
+                background: radial-gradient(ellipse 60% 50% at center, rgba(4,8,16,0.78) 0%, rgba(4,8,16,0.5) 50%, transparent 100%);"></div>
+
+    <!-- 14.5-22s: iridescence (stack decision) -->
+    <div data-clip data-start="14.5" data-duration="8"
+         data-animation="fadeIn" data-in-duration="0.6"
+         data-animation-out="fadeOut" data-out-duration="0.5"
+         data-background="iridescence"
+         data-colors="#2a1c4a,#5b86e5,#9d8df1,#0a0a16"
+         data-intensity="0.6" data-scale="0.8"
+         style="opacity:0;"></div>
+
+    <!-- 21.5-29s: magnet-lines (4-layer architecture) — vector-field look
+         that reinforces the "structural layers" metaphor -->
+    <div data-clip data-start="21.5" data-duration="7.8"
+         data-animation="fadeIn" data-in-duration="0.5"
+         data-animation-out="fadeOut" data-out-duration="0.5"
+         data-background="magnet-lines"
+         data-colors="#FF6363,#5BC0EB,#FFD400,#2af598"
+         data-poles="4" data-gap="44" data-length="22"
+         data-bg="#080612"
+         style="opacity:0;"></div>
+
+    <!-- 28.5-35s: plasma (memory data) -->
+    <div data-clip data-start="28.6" data-duration="6.5"
+         data-animation="fadeIn" data-in-duration="0.6"
+         data-animation-out="fadeOut" data-out-duration="0.6"
+         data-background="plasma"
+         data-colors="#0a0a16,#5b86e5,#FF6363,#FFD400"
+         data-intensity="0.8" data-scale="1.4"
+         style="opacity:0;"></div>
+
+    <!-- 34.5-40s: cool prismatic-burst (deep blue/violet so the warm
+         red-orange Raycast title can pop with maximum contrast) -->
+    <div data-clip data-start="34.5" data-duration="5.5"
+         data-animation="fadeIn" data-in-duration="0.5"
+         data-background="prismatic-burst"
+         data-colors="#0a1438,#1a2a70,#3050a0,#02020a"
+         data-intensity="0.45"
+         style="opacity:0;"></div>
+
+    <!-- Soft dark vignette beneath the closing scene text -->
+    <div data-clip data-start="34.6" data-duration="5.4"
+         data-animation="fadeIn" data-in-duration="0.5"
+         style="position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0;
+                background: radial-gradient(ellipse 70% 50% at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);"></div>
+
+    <!-- Persistent grain -->
+    <div data-background="noise" data-strength="14"
+         style="z-index: 31; mix-blend-mode: overlay; opacity: 0.18;"></div>
+
+
+    <!-- ======== Scene transitions ======== -->
+    <div data-transition="pixel-dissolve"
+         data-start="4.0"  data-duration="0.7" data-color="#0a0a16" data-tile="40"></div>
+    <div data-transition="glitch"
+         data-start="8.4"  data-duration="0.6"></div>
+    <div data-transition="wipe-up"
+         data-start="14.2" data-duration="0.6" data-color="#0a0a16"></div>
+    <div data-transition="iris"
+         data-start="21.7" data-duration="0.9" data-color="#0a0612" data-easing="easeInOutCubic"></div>
+    <div data-transition="flash"
+         data-start="28.6" data-duration="0.6" data-color="#ffffff"></div>
+    <div data-transition="shape"
+         data-start="34.2" data-duration="0.9" data-color="#0a0a16" data-easing="easeInOutQuart"></div>
+
+
+    <!-- =====================================================
+         SCENE 1  ·  0–4s  ·  "RAYCAST 2.0" hero (with spring)
+         ===================================================== -->
+    <div class="scene center scene-scrim"
+         data-clip data-hide-mode="visibility"
+         data-start="0" data-duration="4.0"
+         style="z-index: 10; gap: 24px;">
+
+      <p class="hero-eyebrow text-stroke-dark"
+         data-clip data-start="0.3" data-duration="3.7"
+         data-text-animation="scramble-text"
+         data-anim-duration="1.6">A TECHNICAL DEEP DIVE</p>
+
+      <!-- title: split-text with a deep drop-shadow stack — the only
+           reliable way to keep the gradient fill visible while still
+           giving it a strong dark halo on busy shader backgrounds. -->
+      <h1 class="hero-title text-raycast"
+          style="filter: drop-shadow(0 8px 40px rgba(255,99,99,0.5)) drop-shadow(0 4px 12px rgba(0,0,0,0.9)) drop-shadow(0 0 30px rgba(0,0,0,0.5));"
+          data-clip data-start="0.7" data-duration="3.3"
+          data-text-animation="split-text"
+          data-stagger="0.06" data-char-duration="0.9"
+          data-travel="180" data-easing="springBouncy">RAYCAST 2.0</h1>
+
+      <p class="hero-sub text-readable"
+         data-clip data-start="2.0" data-duration="2.0"
+         data-animation="unmaskUp" data-in-duration="0.8"
+         data-easing="easeInOutQuart"
+         data-animation-out="fadeOut" data-out-duration="0.4"
+         style="opacity:1;">重写、跨平台、与无数个细节</p>
+
+      <p class="hero-mono text-stroke-dark"
+         data-clip data-start="2.7" data-duration="1.3"
+         data-animation="slideBlurIn" data-in-duration="0.7"
+         data-easing="springSnap"
+         data-animation-out="fadeOut" data-out-duration="0.4"
+         style="opacity:0;">MAY 14, 2026 · RAYCAST BLOG</p>
+    </div>
+
+
+    <!-- =====================================================
+         SCENE 2  ·  4.2–8.5s  ·  v1 → v2 cross-platform leap
+         ===================================================== -->
+    <div class="scene-scrim"
+         data-clip data-hide-mode="visibility"
+         data-start="4.3" data-duration="4.2"
+         style="z-index: 10; position: absolute; inset: 0;">
+
+      <p class="compare-caption text-readable"
+         data-clip data-start="4.5" data-duration="4.0"
+         data-animation="unmaskDown" data-in-duration="0.8"
+         data-easing="easeInOutQuart"
+         data-animation-out="fadeOut" data-out-duration="0.5">从 一个平台 到 两个平台</p>
+
+      <div class="compare-stage">
+        <!-- v1: dropIn (cards fall into place) -->
+        <div class="compare-card"
+             data-clip data-start="4.7" data-duration="3.8"
+             data-animation="dropIn" data-in-duration="0.9"
+             data-easing="easeOutQuart"
+             data-animation-out="fadeOut" data-out-duration="0.5"
+             style="opacity:0;">
+          <span class="compare-version text-stroke-dark">v 1.0</span>
+          <div class="compare-platforms text-readable"
+               style="color: #B8DAFF; filter: drop-shadow(0 6px 30px rgba(91,134,229,0.9));"
+               data-clip data-start="5.0" data-duration="3.5"
+               data-text-animation="count-up"
+               data-from="0" data-to="1"
+               data-anim-duration="0.5"
+               data-easing="springBouncy">0</div>
+          <span class="compare-tag text-stroke-dark">macOS · Swift / AppKit</span>
+        </div>
+
+        <!-- arrow: magneticIn — feels like the cards pull each other together -->
+        <span class="compare-arrow text-readable"
+              data-clip data-start="5.9" data-duration="2.6"
+              data-animation="magneticIn" data-in-duration="0.7"
+              data-easing="springBouncy"
+              data-animation-out="fadeOut" data-out-duration="0.5"
+              style="opacity:0;">→</span>
+
+        <!-- v2: flipInY (3D card flip from the right edge) -->
+        <div class="compare-card"
+             data-clip data-start="6.3" data-duration="2.2"
+             data-animation="flipInY" data-in-duration="0.9"
+             data-easing="springSnap"
+             data-animation-out="fadeOut" data-out-duration="0.5"
+             style="opacity:0;">
+          <span class="compare-version text-stroke-dark" style="color: var(--raycast-red); opacity: 1;">v 2.0</span>
+          <div class="compare-platforms text-raycast"
+               style="filter: drop-shadow(0 8px 30px rgba(255,99,99,0.9)) drop-shadow(0 4px 12px rgba(0,0,0,0.8));"
+               data-clip data-start="6.7" data-duration="1.8"
+               data-text-animation="count-up"
+               data-from="0" data-to="2"
+               data-anim-duration="0.7"
+               data-easing="springBouncy">0</div>
+          <span class="compare-tag text-stroke-dark">macOS &nbsp;+&nbsp; Windows</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- =====================================================
+         SCENE 3  ·  9–14.5s  ·  X-Ray codename reveal
+         ===================================================== -->
+    <div class="scene-scrim"
+         data-clip data-hide-mode="visibility"
+         data-start="9" data-duration="5.4"
+         style="z-index: 10; position: absolute; inset: 0;">
+
+      <div class="codename-backdrop"
+           data-clip data-start="9.1" data-duration="5.3"
+           data-animation="fadeIn" data-in-duration="0.4"
+           data-animation-out="fadeOut" data-out-duration="0.5"
+           style="opacity:0;"></div>
+
+      <div class="codename-stage">
+        <p class="codename-tag"
+           data-clip data-start="9.2" data-duration="5.2"
+           data-text-animation="type-text" data-cps="14">// PROJECT CODENAME</p>
+
+        <h1 class="codename-main text-raycast"
+            data-clip data-start="9.8" data-duration="4.6"
+            data-text-animation="decrypted-text"
+            data-anim-duration="1.6">X-RAY</h1>
+
+        <p class="codename-expand text-stroke-dark"
+           data-clip data-start="11.5" data-duration="2.9"
+           data-text-animation="wave-text"
+           data-stagger="0.045" data-amplitude="38"
+           data-easing="easeOutQuart">Cross-platform Raycast</p>
+
+        <p class="codename-zh text-readable"
+           data-clip data-start="12.4" data-duration="2.0"
+           data-animation="glitchIn" data-in-duration="0.9"
+           data-easing="easeOutCubic"
+           data-animation-out="fadeOut" data-out-duration="0.5"
+           style="opacity:0;">让 Raycast 跨越平台的边界</p>
+      </div>
+    </div>
+
+
+    <!-- =====================================================
+         SCENE 4  ·  14.5–22s  ·  Stack decision
+         ===================================================== -->
+    <div class="scene-scrim"
+         data-clip data-hide-mode="visibility"
+         data-start="14.5" data-duration="7.5"
+         style="z-index: 10; position: absolute; inset: 0;">
+
+      <p class="stack-header text-readable text-stroke-dark"
+         style="position: absolute; top: 110px; left:0; right:0; color: #fff;"
+         data-clip data-start="14.7" data-duration="7.2"
+         data-animation="unmaskDown" data-in-duration="0.8"
+         data-easing="easeInOutQuart"
+         data-animation-out="fadeOut" data-out-duration="0.5">技术栈选型 · 三选一</p>
+
+      <div class="stack-grid" style="padding-top: 120px;">
+        <div class="stack-options">
+          <!-- Option A: cubeIn from the top — feels like a card falling face-down -->
+          <div class="stack-option"
+               data-clip data-start="15.0" data-duration="6.9"
+               data-animation="cubeIn" data-in-duration="0.9"
+               data-easing="easeOutQuart"
+               data-animation-out="fadeOut" data-out-duration="0.5"
+               style="opacity:0;">
+            <div class="stack-mark text-stroke-dark">OPTION A</div>
+            <div class="stack-name text-readable">Electron</div>
+            <div class="stack-verdict text-readable" style="color:#cbd5e1;">体积偏大，原生控制弱</div>
+          </div>
+
+          <!-- Option B: skewIn — sheared landing for a different feel -->
+          <div class="stack-option"
+               data-clip data-start="15.4" data-duration="6.5"
+               data-animation="skewIn" data-in-duration="0.8"
+               data-easing="easeOutBack"
+               data-animation-out="fadeOut" data-out-duration="0.5"
+               style="opacity:0;">
+            <div class="stack-mark text-stroke-dark">OPTION B</div>
+            <div class="stack-name text-readable">Tauri</div>
+            <div class="stack-verdict text-readable" style="color:#cbd5e1;">当时还不够成熟</div>
+          </div>
+
+          <!-- Hybrid (chosen): dropIn — bounces in with weight + electric-border halo -->
+          <div class="stack-option chosen"
+               data-effect="electric-border"
+               data-color="#FF6363" data-color2="#FFD400" data-color3="#5BC0EB"
+               data-intensity="1.3" data-speed="1.4" data-padding="22"
+               data-border-radius="18"
+               data-clip data-start="15.8" data-duration="6.1"
+               data-animation="dropIn" data-in-duration="1.0"
+               data-easing="easeOutQuart"
+               data-animation-out="fadeOut" data-out-duration="0.5"
+               style="opacity:0;">
+            <div class="stack-mark text-stroke-dark" style="color: var(--raycast-red); opacity: 1;">CHOSEN ✓</div>
+            <div class="stack-name"
+                 style="color:#fff;
+                        text-shadow: 0 0 18px rgba(255,99,99,0.85),
+                                     0 0 40px rgba(255,139,94,0.55),
+                                     0 4px 12px rgba(0,0,0,0.9);">Hybrid</div>
+            <div class="stack-verdict text-readable" style="color:#fff;">原生外壳 + 系统 WebView</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="stack-final text-readable"
+         data-scrim="radial" data-scrim-padding="36" data-scrim-opacity="0.55"
+         data-clip data-start="18.3" data-duration="3.5"
+         data-text-animation="shiny-text" data-speed="1.2">"We needed to be in control of every part of the stack."</p>
+    </div>
+
+
+    <!-- =====================================================
+         SCENE 5  ·  22–29s  ·  4-layer architecture
+         ===================================================== -->
+    <div class="scene-scrim"
+         data-clip data-hide-mode="visibility"
+         data-start="22.0" data-duration="6.9"
+         style="z-index: 10; position: absolute; inset: 0;">
+
+      <div class="arch-stage">
+        <!-- Title: split-text + drop-shadow stack (mask-text doesn't
+             compose well with -webkit-text-fill-color: transparent
+             gradient text in Chromium screenshot mode). -->
+        <h2 class="arch-title text-raycast"
+            style="filter: drop-shadow(0 4px 20px rgba(255,99,99,0.5)) drop-shadow(0 2px 8px rgba(0,0,0,0.8));"
+            data-clip data-start="22.2" data-duration="6.6"
+            data-text-animation="split-text"
+            data-stagger="0.07" data-char-duration="0.9"
+            data-travel="60" data-easing="springBouncy">四层全新架构</h2>
+
+        <!-- Layer 1: unmaskLeft — slide-reveal from left -->
+        <div class="arch-layer host"
+             data-clip data-start="22.8" data-duration="6.0"
+             data-animation="unmaskLeft" data-in-duration="0.7"
+             data-easing="easeInOutQuart"
+             data-animation-out="fadeOut" data-out-duration="0.4">
+          <span class="badge">SWIFT/C#</span>
+          <span class="name text-readable">原生外壳 · Host App</span>
+          <span class="desc text-readable">窗口、热键、菜单栏</span>
+        </div>
+
+        <!-- Layer 2: slideBlurIn — editorial slide-in with blur -->
+        <div class="arch-layer web"
+             data-clip data-start="23.3" data-duration="5.5"
+             data-animation="slideBlurIn" data-in-duration="0.8"
+             data-easing="springSoft"
+             data-animation-out="fadeOut" data-out-duration="0.4"
+             style="opacity:0;">
+          <span class="badge">REACT</span>
+          <span class="name text-readable">Web 前端 · UI</span>
+          <span class="desc text-readable">一份代码 · 两个平台</span>
+        </div>
+
+        <!-- Layer 3: magneticIn — pulled in by a magnet -->
+        <div class="arch-layer node"
+             data-clip data-start="23.8" data-duration="5.0"
+             data-animation="magneticIn" data-in-duration="0.8"
+             data-easing="springBouncy"
+             data-animation-out="fadeOut" data-out-duration="0.4"
+             style="opacity:0;">
+          <span class="badge">NODE.JS</span>
+          <span class="name text-readable">Node 后端 · 业务逻辑</span>
+          <span class="desc text-readable">数据库 / 扩展运行时</span>
+        </div>
+
+        <!-- Layer 4 (Rust, the fastest): glitchIn — feels technical/performance -->
+        <div class="arch-layer rust"
+             data-clip data-start="24.3" data-duration="4.5"
+             data-animation="glitchIn" data-in-duration="0.9"
+             data-easing="easeOutCubic"
+             data-animation-out="fadeOut" data-out-duration="0.4"
+             style="opacity:0;">
+          <span class="badge">RUST</span>
+          <span class="name text-readable">Rust 内核 · 性能层</span>
+          <span class="desc text-readable">秒级扫描整个硬盘</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- =====================================================
+         SCENE 6  ·  29–34.5s  ·  Memory + performance
+         ===================================================== -->
+    <div class="scene-scrim"
+         data-clip data-hide-mode="visibility"
+         data-start="29.0" data-duration="5.4"
+         style="z-index: 10; position: absolute; inset: 0;">
+
+      <div class="memory-stage">
+        <p class="memory-eyebrow text-readable"
+           data-clip data-start="29.2" data-duration="5.2"
+           data-animation="unmaskDown" data-in-duration="0.7"
+           data-easing="easeInOutQuart"
+           data-animation-out="fadeOut" data-out-duration="0.5">内存占用 · 诚实地告诉你</p>
+
+        <div class="memory-row">
+          <!-- v1 block: slideBlurIn from the left -->
+          <div class="memory-block"
+               data-clip data-start="29.5" data-duration="4.7"
+               data-animation="slideBlurIn" data-in-duration="0.9"
+               data-easing="springSmooth"
+               data-animation-out="fadeOut" data-out-duration="0.5"
+               style="opacity:0;">
+            <span class="memory-label text-stroke-dark">v1 · 旧版</span>
+            <div style="display:flex; align-items:baseline;">
+              <span class="memory-value text-readable"
+                    style="color: #7fbeff;"
+                    data-clip data-start="29.7" data-duration="4.5"
+                    data-text-animation="count-up"
+                    data-odometer="true"
+                    data-from="0" data-to="250"
+                    data-anim-duration="1.4"
+                    data-easing="springSmooth">0</span>
+              <span class="memory-unit text-readable" style="color: #7fbeff;">MB</span>
+            </div>
+          </div>
+
+          <!-- arrow: kenBurnsIn — slow zoom into place -->
+          <span class="memory-arrow text-readable"
+                data-clip data-start="30.6" data-duration="3.6"
+                data-animation="kenBurnsIn" data-in-duration="0.8"
+                data-easing="easeOutQuart"
+                data-animation-out="fadeOut" data-out-duration="0.5"
+                style="opacity:0;">→</span>
+
+          <!-- v2 block: irisIn — circular zoom open -->
+          <div class="memory-block"
+               data-clip data-start="30.9" data-duration="3.3"
+               data-animation="irisIn" data-in-duration="0.9"
+               data-easing="easeOutQuart"
+               data-animation-out="fadeOut" data-out-duration="0.5"
+               style="opacity:0;">
+            <span class="memory-label text-stroke-dark" style="color: var(--raycast-red); opacity: 1;">v2 · 新版</span>
+            <div style="display:flex; align-items:baseline;">
+              <span class="memory-value text-readable"
+                    style="color: #FF8B5E;"
+                    data-clip data-start="31.2" data-duration="3.0"
+                    data-text-animation="count-up"
+                    data-odometer="true"
+                    data-from="0" data-to="400"
+                    data-anim-duration="1.5"
+                    data-easing="springSmooth">0</span>
+              <span class="memory-unit text-readable" style="color: #FF8B5E;">MB</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="memory-note text-readable"
+           data-scrim="radial" data-scrim-padding="32" data-scrim-opacity="0.5"
+           data-clip data-start="32.0" data-duration="2.3"
+           data-animation="unmaskUp" data-in-duration="0.7"
+           data-easing="easeInOutQuart"
+           data-animation-out="fadeOut" data-out-duration="0.5">代价是真实的，但是有界的、可衡量、可优化的</p>
+
+        <p class="memory-bonus text-readable"
+           data-clip data-start="32.8" data-duration="1.5"
+           data-animation="magneticIn" data-in-duration="0.8"
+           data-easing="springBouncy"
+           data-animation-out="fadeOut" data-out-duration="0.4"
+           style="opacity:0;">✦ 全盘文件索引：从 数分钟 → 数秒</p>
+      </div>
+    </div>
+
+
+    <!-- =====================================================
+         SCENE 7  ·  34.5–40s  ·  Closing quote + Logo
+         ===================================================== -->
+    <div class="scene-scrim scene-scrim-strong"
+         data-clip data-hide-mode="visibility"
+         data-start="34.6" data-duration="5.4"
+         style="z-index: 10; position: absolute; inset: 0;">
+
+      <div class="quote-stage">
+        <div class="quote-mark text-readable"
+             data-clip data-start="34.8" data-duration="2.6"
+             data-animation="dropIn" data-in-duration="0.8"
+             data-easing="easeOutQuart"
+             data-animation-out="fadeOut" data-out-duration="0.4"
+             style="opacity:0;">"</div>
+
+        <!-- Quote: wave-text in a translucent card so it always stays
+             readable, even on top of a prismatic-burst shader -->
+        <p class="quote-text text-readable text-card"
+           style="padding: 32px 80px; font-size: 64px; max-width: 1500px;"
+           data-clip data-start="35.0" data-duration="2.4"
+           data-text-animation="wave-text"
+           data-stagger="0.085" data-amplitude="30" data-wave="0.9"
+           data-easing="easeOutQuart">代码只是手段，产品才是目的。</p>
+
+        <p class="quote-attrib text-stroke-dark"
+           data-clip data-start="36.4" data-duration="1.0"
+           data-animation="unmaskUp" data-in-duration="0.6"
+           data-easing="easeInOutQuart"
+           data-animation-out="fadeOut" data-out-duration="0.3">— RAYCAST TEAM</p>
+      </div>
+
+      <div class="quote-stage"
+           data-clip data-start="37.6" data-duration="2.4"
+           data-animation="fadeIn" data-in-duration="0.7"
+           data-easing="springSoft"
+           style="opacity:0; gap: 20px;">
+
+        <!-- Closing title: white text + heavy red glow (more reliable than
+             text-raycast gradient when combined with 3D transforms — the
+             cubeIn perspective breaks -webkit-background-clip: text in
+             Chromium). -->
+        <h1 class="closing-title"
+            style="color: #fff;
+                   text-shadow: 0 0 24px #FF6363, 0 0 48px rgba(255,99,99,0.7),
+                                0 0 90px rgba(255,99,99,0.45),
+                                0 4px 12px rgba(0,0,0,0.9),
+                                0 8px 32px rgba(0,0,0,0.6);
+                   filter: none;"
+            data-clip data-start="37.6" data-duration="2.4"
+            data-animation="dropIn" data-in-duration="1.0"
+            data-easing="easeOutQuart">RAYCAST 2.0</h1>
+
+        <p class="closing-meta text-stroke-dark">PUBLIC BETA · NOW AVAILABLE</p>
+
+        <div class="closing-platforms">
+          <span> macOS</span>
+          <span>WINDOWS</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ======== Persistent UI ======== -->
+    <div class="corner-tag"
+         data-clip data-start="0" data-duration="40"
+         data-animation="fadeIn" data-in-duration="1.2"
+         data-animation-out="fadeOut" data-out-duration="0.5"
+         style="opacity:0;">RAYCAST · DEEP DIVE</div>
+
+    <div class="source-tag"
+         data-clip data-start="0.5" data-duration="39.5"
+         data-animation="fadeIn" data-in-duration="1.5"
+         data-animation-out="fadeOut" data-out-duration="0.5"
+         style="opacity:0;">raycast.com/blog · 2026.05</div>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="mvm-progress"></div>
+    </div>
+
+    <div class="frame" style="opacity: 0.4;"></div>
+  </div>
+
+  <script src="../../runtime/spring.js"></script>
+  <script src="../../runtime/timeline.js"></script>
+  <script src="../../runtime/components.js"></script>
+  <script src="../../runtime/shaders.js"></script>
+  <script src="../../runtime/transitions.js"></script>
+  <script src="../../runtime/effects.js"></script>
+  <script>
+    window.addEventListener('mvm-seek', (e) => {
+      const t = e.detail.time;
+      const meta = window.__mvm.meta();
+      const bar = document.getElementById('mvm-progress');
+      if (bar) bar.style.transform = `scaleX(${Math.min(1, t / meta.duration)})`;
+    });
+  </script>
+</body>
+</html>

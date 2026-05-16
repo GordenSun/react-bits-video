@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Readable + animation preset showcase</title>
+  <link rel="stylesheet" href="../runtime/styles.css" />
+  <link rel="stylesheet" href="../assets/fonts/fonts.css" />
+  <style>
+    .grid {
+      position: absolute; inset: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 12px;
+      padding: 40px;
+    }
+    .cell {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+    }
+    .cell > * {
+      grid-area: 1 / 1;
+      max-width: 90%;
+      text-align: center;
+    }
+    .label {
+      position: absolute;
+      bottom: 10px;
+      left: 12px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 14px;
+      color: white;
+      background: rgba(0,0,0,0.75);
+      padding: 4px 10px;
+      border-radius: 4px;
+      z-index: 100;
+      letter-spacing: 0.06em;
+    }
+    .bg-full {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+    }
+    .title-text {
+      font-family: "Noto Sans SC";
+      font-weight: 900;
+      font-size: 64px;
+      color: white;
+      letter-spacing: 0.02em;
+      position: relative;
+      z-index: 10;
+    }
+    .body-text {
+      font-family: "Noto Sans SC";
+      font-weight: 700;
+      font-size: 36px;
+      color: white;
+      z-index: 10;
+      position: relative;
+    }
+    .stroke {
+      -webkit-text-stroke: 2px rgba(0,0,0,0.7);
+      paint-order: stroke fill;
+    }
+  </style>
+</head>
+<body class="mvm-preview">
+  <div id="stage"
+       data-composition-id="readable-showcase"
+       data-width="1920" data-height="1080" data-fps="15" data-duration="3">
+
+    <div class="grid">
+
+      <!-- Row 1 — text readability over busy backgrounds -->
+      <div class="cell">
+        <div class="bg-full" data-background="liquid-ether"
+             data-colors="#7F7FD5,#86A8E7,#91EAE4,#FFC371" data-intensity="1.0"></div>
+        <div class="title-text text-aurora">无保护</div>
+        <span class="label">naked text</span>
+      </div>
+
+      <div class="cell">
+        <div class="bg-full" data-background="liquid-ether"
+             data-colors="#7F7FD5,#86A8E7,#91EAE4,#FFC371" data-intensity="1.0"></div>
+        <div class="title-text text-aurora text-readable">可读混合</div>
+        <span class="label">.text-readable</span>
+      </div>
+
+      <div class="cell">
+        <div class="bg-full" data-background="iridescence"
+             data-colors="#9d8df1,#2af598,#FFD400,#FF6363" data-intensity="1.2"></div>
+        <div class="title-text" data-scrim="card"
+             data-scrim-padding="22" data-scrim-radius="14">卡片底</div>
+        <span class="label">data-scrim="card"</span>
+      </div>
+
+      <div class="cell">
+        <div class="bg-full" data-background="prismatic-burst"
+             data-colors="#FF6363,#FFD400,#5BC0EB,#080612" data-intensity="1.1"></div>
+        <div class="title-text" data-scrim="auto"
+             data-scrim-padding="34">自动底</div>
+        <span class="label">data-scrim="auto"</span>
+      </div>
+
+      <!-- Row 2 — new outer animations on visible cards -->
+      <div class="cell" style="background:#0a0a14;">
+        <div class="title-text"
+             data-clip data-start="0.4" data-duration="2.6"
+             data-animation="unmaskUp"
+             data-in-duration="1.4"
+             data-easing="easeInOutQuart">UNMASK</div>
+        <span class="label">unmaskUp</span>
+      </div>
+
+      <div class="cell" style="background:#100b14;">
+        <div class="title-text"
+             data-clip data-start="0.4" data-duration="2.6"
+             data-animation="flipInX"
+             data-in-duration="1.0"
+             data-easing="springSnap">FLIP X</div>
+        <span class="label">flipInX</span>
+      </div>
+
+      <div class="cell" style="background:#0d0a16;">
+        <div class="title-text"
+             data-clip data-start="0.4" data-duration="2.6"
+             data-animation="cubeIn"
+             data-in-duration="1.0"
+             data-easing="springBouncy">CUBE</div>
+        <span class="label">cubeIn</span>
+      </div>
+
+      <div class="cell" style="background:#070b18;">
+        <div class="title-text"
+             data-clip data-start="0.4" data-duration="2.6"
+             data-animation="glitchIn"
+             data-in-duration="1.4"
+             data-easing="easeOutQuart">GLITCH</div>
+        <span class="label">glitchIn</span>
+      </div>
+
+      <!-- Row 3 — new text animations -->
+      <div class="cell" style="background:#0a0a14;">
+        <div class="title-text"
+             data-clip data-start="0.3" data-duration="2.6"
+             data-text-animation="mask-text"
+             data-anim-duration="1.2"
+             data-mask-from="center"
+             data-easing="easeInOutExpo">MASK</div>
+        <span class="label">mask-text (center)</span>
+      </div>
+
+      <div class="cell" style="background:#0a0a14;">
+        <div class="title-text"
+             data-clip data-start="0.3" data-duration="2.6"
+             data-text-animation="wave-text"
+             data-stagger="0.06"
+             data-amplitude="42"
+             data-easing="easeOutQuart">WAVE TEXT</div>
+        <span class="label">wave-text</span>
+      </div>
+
+      <div class="cell" style="background:#0a0a14;">
+        <div class="body-text mono"
+             data-clip data-start="0.3" data-duration="2.6"
+             data-text-animation="scramble-text"
+             data-anim-duration="1.5">init_payload()</div>
+        <span class="label">scramble-text</span>
+      </div>
+
+      <div class="cell" style="background:#0a0a14;">
+        <div class="title-text"
+             data-clip data-start="0.4" data-duration="2.6"
+             data-animation="magneticIn"
+             data-in-duration="1.0"
+             data-easing="springBouncy">MAGNET</div>
+        <span class="label">magneticIn</span>
+      </div>
+
+    </div>
+  </div>
+  <script src="../runtime/spring.js"></script>
+  <script src="../runtime/timeline.js"></script>
+  <script src="../runtime/components.js"></script>
+  <script src="../runtime/shaders.js"></script>
+  <script src="../runtime/transitions.js"></script>
+  <script src="../runtime/effects.js"></script>
+</body>
+</html>

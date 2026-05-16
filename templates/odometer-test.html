@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Odometer test</title>
+  <link rel="stylesheet" href="../runtime/styles.css" />
+  <link rel="stylesheet" href="../assets/fonts/fonts.css" />
+</head>
+<body class="mvm-preview">
+  <div id="stage"
+       data-composition-id="odom-test"
+       data-width="1920" data-height="1080" data-fps="15" data-duration="3">
+    <div data-background="#0a0a16"></div>
+    <div class="scene center">
+      <p style="font-family: 'JetBrains Mono', monospace; font-size: 24px; letter-spacing: 0.3em; color: #94a3b8;">ODOMETER COUNT-UP</p>
+      <div style="font-family: 'Noto Sans SC'; font-weight: 900; font-size: 220px; color: #FF8B5E;
+                  filter: drop-shadow(0 4px 30px rgba(255,139,94,0.4));"
+           data-clip data-start="0" data-duration="3"
+           data-text-animation="count-up"
+           data-odometer="true"
+           data-from="0" data-to="86400"
+           data-anim-duration="2.5"
+           data-separator=","
+           data-easing="easeOutExpo">0</div>
+    </div>
+    <style>
+      .text-raycast {
+        background: linear-gradient(110deg, #FF6363 0%, #FF8B5E 40%, #FFD400 100%);
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+      }
+    </style>
+  </div>
+  <script src="../runtime/spring.js"></script>
+  <script src="../runtime/timeline.js"></script>
+  <script src="../runtime/components.js"></script>
+  <script src="../runtime/shaders.js"></script>
+  <script src="../runtime/transitions.js"></script>
+  <script src="../runtime/effects.js"></script>
+</body>
+</html>

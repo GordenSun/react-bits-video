@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Shader Showcase</title>
+  <link rel="stylesheet" href="../runtime/styles.css" />
+  <link rel="stylesheet" href="../assets/fonts/fonts.css" />
+  <style>
+    .grid {
+      position: absolute; inset: 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 12px;
+      padding: 12px;
+    }
+    .cell {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #000;
+    }
+    .cell .label {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 22px;
+      color: white;
+      background: rgba(0,0,0,0.6);
+      padding: 6px 12px;
+      border-radius: 4px;
+      z-index: 10;
+      letter-spacing: 0.1em;
+    }
+    .bg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+    }
+  </style>
+</head>
+<body class="mvm-preview">
+  <div id="stage"
+       data-composition-id="showcase"
+       data-width="1920" data-height="1080" data-fps="15" data-duration="2">
+
+    <div class="grid">
+      <div class="cell">
+        <div class="bg" data-background="liquid-ether"
+             data-colors="#1a0d22,#FF6363,#FFD400,#5BC0EB"
+             data-intensity="1.2" data-scale="1.0"></div>
+        <span class="label">liquid-ether</span>
+      </div>
+      <div class="cell">
+        <div class="bg" data-background="iridescence"
+             data-colors="#2a1c4a,#FF6B6B,#4ECDC4,#0a0a16"
+             data-intensity="1.0" data-scale="1.0"></div>
+        <span class="label">iridescence</span>
+      </div>
+      <div class="cell">
+        <div class="bg" data-background="prismatic-burst"
+             data-colors="#FF6363,#FFD400,#5BC0EB,#0a0a16"
+             data-intensity="1.0"></div>
+        <span class="label">prismatic-burst</span>
+      </div>
+      <div class="cell">
+        <div class="bg" data-background="lightning"
+             data-colors="#FFFFFF,#A9D1FF,#FF6363,#040810"
+             data-intensity="1.0" data-seed="2"></div>
+        <span class="label">lightning</span>
+      </div>
+      <div class="cell">
+        <div class="bg" data-background="plasma"
+             data-colors="#1a0d2a,#7F7FD5,#FF8B5E,#FFD400"
+             data-intensity="1.0" data-scale="1.5"></div>
+        <span class="label">plasma</span>
+      </div>
+      <div class="cell">
+        <div class="bg" data-background="beams"
+             data-colors="#FF6363,#5BC0EB,#FFD400,#0a0a16"
+             data-intensity="1.0"></div>
+        <span class="label">beams</span>
+      </div>
+    </div>
+  </div>
+  <script src="../runtime/spring.js"></script>
+  <script src="../runtime/timeline.js"></script>
+  <script src="../runtime/components.js"></script>
+  <script src="../runtime/shaders.js"></script>
+  <script src="../runtime/transitions.js"></script>
+</body>
+</html>

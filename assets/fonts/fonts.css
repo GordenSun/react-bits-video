@@ -1,0 +1,95 @@
+@font-face {
+  font-family: "Noto Sans SC";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./NotoSansSC-Regular.otf") format("opentype");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Noto Sans SC";
+  font-weight: 700;
+  font-style: normal;
+  src: url("./NotoSansSC-Bold.otf") format("opentype");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Noto Sans SC";
+  font-weight: 900;
+  font-style: normal;
+  src: url("./NotoSansSC-Black.otf") format("opentype");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Noto Serif SC";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./NotoSerifSC-Regular.otf") format("opentype");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Noto Serif SC";
+  font-weight: 900;
+  font-style: normal;
+  src: url("./NotoSerifSC-Black.otf") format("opentype");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "LXGW WenKai";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./LXGWWenKai-Regular.ttf") format("truetype");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "ZCOOL KuaiLe";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./ZCOOLKuaiLe-Regular.ttf") format("truetype");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Ma Shan Zheng";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./MaShanZheng-Regular.ttf") format("truetype");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Long Cang";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./LongCang-Regular.ttf") format("truetype");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "ZCOOL XiaoWei";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./ZCOOLXiaoWei-Regular.ttf") format("truetype");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "ZCOOL QingKe HuangYou";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./ZCOOLQingKeHuangYou-Regular.ttf") format("truetype");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Liu Jian Mao Cao";
+  font-weight: 400;
+  font-style: normal;
+  src: url("./LiuJianMaoCao-Regular.ttf") format("truetype");
+  font-display: block;
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{TITLE}}</title>
+  <link rel="stylesheet" href="../runtime/styles.css" />
+  <link rel="stylesheet" href="../assets/fonts/fonts.css" />
+</head>
+<body class="mvm-preview">
+
+  <!-- Composition definition:
+       data-composition-id  unique id
+       data-width / height  pixel dimensions
+       data-fps             frames per second  (30 / 60)
+       data-duration        total seconds
+  -->
+  <div id="stage"
+       data-composition-id="{{ID}}"
+       data-width="1920"
+       data-height="1080"
+       data-fps="30"
+       data-duration="10">
+
+    <!-- background layer -->
+    <div data-background="aurora"></div>
+
+    <!-- foreground scene -->
+    <div class="scene stack">
+      <h1 class="title text-aurora"
+          data-clip
+          data-start="0.2"
+          data-duration="9"
+          data-text-animation="split-text"
+          data-stagger="0.06"
+          data-char-duration="0.9">你好，世界</h1>
+
+      <p class="subtitle"
+         data-clip
+         data-start="1.4"
+         data-duration="8"
+         data-animation="fadeInUp"
+         data-in-duration="0.9">由 motion-video-maker 制作</p>
+    </div>
+
+    <!-- letter-box / frame overlay -->
+    <div class="frame"></div>
+
+  </div>
+
+  <script src="../runtime/timeline.js"></script>
+  <script src="../runtime/components.js"></script>
+</body>
+</html>

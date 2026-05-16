@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+# (note: package-lock.json IS committed — reproducible installs)
+
+# editor / OS
+.DS_Store
+*.log
+.vscode/
+.idea/
+
+# render-time temp dirs
+.mvm-frames-*/
+/tmp_frames/
+
+# downloaded fonts (~96MB) — keep the repo lean. Other agents/users
+# re-fetch them via `node scripts/install-fonts.mjs` (idempotent,
+# only ~30s).  fonts.css is checked in so authors can `@import` it
+# even before fonts are installed.
+assets/fonts/*.ttf
+assets/fonts/*.otf
+assets/fonts/*.woff
+assets/fonts/*.woff2
+
+# per-render frame caches and one-off snapshots
+**/.snap-*.png
+**/frame-*.png
