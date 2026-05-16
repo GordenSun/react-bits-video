@@ -211,6 +211,42 @@ identical frames at 30 fps.
 
 The full spec is in [`SKILL.md`](SKILL.md) (read by AI agents).
 
+## Common pitfall — invisible text on light/dark backgrounds
+
+The single most common agent mistake is forgetting that **`#stage`
+defaults to white text on a dark backdrop**.  If you add an element
+with a light background **but don't change its text color**, the
+white default will make the text invisible against the white card.
+
+### Use paired utility classes — never write a half-pair
+
+| If your container has… | Use this | What it guarantees |
+|---|---|---|
+| Dark background | `.mvm-card-dark`  | Dark bg + **white** text |
+| Light background | `.mvm-card-light` | Light bg + **dark** text |
+| Just text color | `.mvm-light` / `.mvm-dark` | Locks text color |
+| Whole-scene flip | `.mvm-bg-light` / `.mvm-bg-dark` | Inverts theme |
+| Light theme override | `style="--mvm-bg: #f7f5ef; --mvm-text: #0a0a0f"` on `#stage` | Auto-inherits everywhere |
+
+```html
+<!-- ✅ Good -->
+<div class="mvm-card-light"><h2>清晰可见</h2></div>
+
+<!-- ❌ Bad — text inherits white, becomes invisible -->
+<div style="background: white"><h2>看不见</h2></div>
+```
+
+### Automatic contrast warnings
+
+`runtime/contrast-check.js` runs during preview and render. Any text
+element under 2.2:1 WCAG luminance ratio against its effective
+background produces a `console.warn`. `scripts/render.mjs` collects
+these and prints a summary at the end of the export — so you'll know
+**before you ship** if you have invisible text in any frame.
+
+See `templates/contrast-test.html` for a 4-cell self-test that
+exercises both failure and success cases.
+
 ---
 
 ## Lineage

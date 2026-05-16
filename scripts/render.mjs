@@ -100,9 +100,15 @@ async function main() {
   });
   const page = await browser.newPage();
 
-  // Forward browser console errors for easier debugging
+  // Forward browser console errors + collect contrast-check warnings
+  // for a single end-of-render summary.
+  const contrastWarnings = [];
   page.on('console', m => {
-    if (m.type() === 'error') err('[browser]', m.text());
+    const text = m.text();
+    if (m.type() === 'error') err('[browser]', text);
+    else if (m.type() === 'warning' && text.startsWith('[mvm-contrast]')) {
+      contrastWarnings.push(text.replace('[mvm-contrast]', '').trim());
+    }
   });
   page.on('pageerror', e => err('[browser:exception]', e.message));
 
@@ -203,6 +209,19 @@ async function main() {
   }
 
   log('✔ done →', outPath);
+
+  // Report any low-contrast text the runtime detected — dedupe across
+  // frames since the same element triggers on every scan.
+  const uniqueWarnings = Array.from(new Set(contrastWarnings));
+  if (uniqueWarnings.length > 0) {
+    err('────────────────────────────────────────────────────────');
+    err(`⚠  ${uniqueWarnings.length} LOW-CONTRAST TEXT ISSUE(S) DETECTED`);
+    err('   (text was likely invisible in some frames — see SKILL.md');
+    err('    "Color & contrast contract" or use .mvm-card-dark)');
+    err('────────────────────────────────────────────────────────');
+    uniqueWarnings.slice(0, 10).forEach(w => err('  •', w));
+    if (uniqueWarnings.length > 10) err(`  • ... and ${uniqueWarnings.length - 10} more`);
+  }
 }
 
 function runFfmpeg(args) {

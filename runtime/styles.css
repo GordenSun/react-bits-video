@@ -6,6 +6,29 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ============================================================
+ * Theme tokens — change these once on `:root` to retheme an entire
+ * composition. They are the single source of truth for all default
+ * colors so agents never need to invent values for plain text.
+ * ============================================================ */
+:root {
+  /* Default backdrop — deep neutral dark */
+  --mvm-bg:           #0a0a0f;
+  --mvm-bg-soft:      #15151c;
+
+  /* Default text — guaranteed-readable white on the default backdrop.
+     Every element inside #stage inherits this unless you override it. */
+  --mvm-text:         #ffffff;
+  --mvm-text-muted:   #cbd5e1;
+  --mvm-text-dim:     rgba(255, 255, 255, 0.6);
+  --mvm-text-strong:  #FFE87A;
+
+  /* Default accent (Raycast red — replace for your brand) */
+  --mvm-accent:       #FF6363;
+  --mvm-accent-warm:  #FF8B5E;
+  --mvm-accent-cool:  #5BC0EB;
+}
+
 html, body {
   width: 100%;
   height: 100%;
@@ -13,13 +36,13 @@ html, body {
   background: #000;
   /* Elegant default — prefer serif (Noto Serif SC = 思源宋体) and
      calligraphic wenkai (LXGW WenKai = 霞鹜文楷) for body Chinese text.
-     Use `.cn-sans` / `.cn-bold` to opt into the heavier sans-serif
-     family when you need impact (e.g. big poster-style data numbers). */
+     Use `.cn-sans` to opt into the heavier sans-serif family when
+     you need impact (e.g. big poster-style data numbers). */
   font-family: "Noto Serif SC", "Source Han Serif SC", "LXGW WenKai",
                "STSong", "Songti SC", "PingFang SC",
                "Noto Sans SC", "Hiragino Sans GB",
                -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, serif;
-  color: #fff;
+  color: var(--mvm-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -29,8 +52,36 @@ html, body {
   width: 1920px;
   height: 1080px;
   overflow: hidden;
-  background: var(--mvm-bg, #0a0a0f);
+  background: var(--mvm-bg);
+  color: var(--mvm-text);
   transform-origin: top left;
+}
+
+/* ============================================================
+ * COLOR-CONTRAST SAFETY NET — the most common authoring mistake is
+ * forgetting to set `color: #fff` on a heading because browsers
+ * historically gave headings their own color in some reset stylesheets.
+ * Native elements like h1-h6, button, and a do not always inherit
+ * color from the parent without help, so we force them to.
+ *
+ * IMPORTANT: this rule is intentionally LIMITED to elements that have
+ * historically had their own UA color. Setting `color: inherit` on a
+ * broad `#stage *` selector would break legitimate author styles
+ * (e.g. `.mvm-card-light` setting a dark color on its descendants).
+ * ============================================================ */
+#stage h1, #stage h2, #stage h3, #stage h4, #stage h5, #stage h6,
+#stage a:not([style*="color"]),
+#stage button:not([style*="color"]) {
+  color: inherit;
+}
+
+/* Odometer renderer creates nested per-digit divs at runtime; force
+   them to inherit the host element's color so gradient / custom
+   colors survive the dynamic DOM swap. */
+.mvm-odom-col, .mvm-odom-col > *,
+.mvm-odom-stack, .mvm-odom-stack > *,
+.mvm-odom-sep {
+  color: inherit;
 }
 
 /* Center the stage in the viewport for preview mode (replaced when rendering) */
@@ -222,6 +273,42 @@ body.mvm-preview #stage {
     0 0 50px rgba(120,180,255,0.35),
     0 0 90px rgba(80,140,255,0.2);
 }
+
+/* ===============================================================
+ * GUARANTEED-CONTRAST PAIRS — bulletproof text/background combos.
+ * Use these when an agent needs "I just want text I can read" with
+ * zero color thinking.  Each class sets BOTH color and background so
+ * they can never desync.
+ * ============================================================ */
+
+/* Text-only color locks (use when you control the background) */
+.mvm-light       { color: #ffffff !important; }
+.mvm-dark        { color: #0a0a0f !important; }
+.mvm-light-muted { color: rgba(255, 255, 255, 0.7) !important; }
+.mvm-dark-muted  { color: rgba(10, 10, 15, 0.65)  !important; }
+
+/* Card-style pairs — apply to a container; text inside auto-inherits */
+.mvm-card-dark {
+  display: inline-block;
+  background: rgba(8, 8, 16, 0.88);
+  color: #ffffff;
+  padding: 20px 36px;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.mvm-card-light {
+  display: inline-block;
+  background: rgba(247, 245, 239, 0.95);
+  color: #0a0a0f;
+  padding: 20px 36px;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+/* Full-bleed background lock — guarantees the rest of the scene
+   text reads correctly. Apply to a scene wrapper. */
+.mvm-bg-dark  { background-color: var(--mvm-bg) !important; color: var(--mvm-text) !important; }
+.mvm-bg-light { background-color: #f7f5ef !important; color: #0a0a0f !important; }
 
 /* ===============================================================
  * Text readability helpers — protect typography against busy

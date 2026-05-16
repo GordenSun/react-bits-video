@@ -260,6 +260,95 @@ Inspired by react-bits' ElectricBorder / StarBorder / ImageTrail.
     data-easing="springSmooth">FLOW</h1>
 ```
 
+## Color & contrast contract — READ THIS FIRST
+
+The runtime gives every composition a **white-on-dark default**. Follow
+three rules and your text will always be visible:
+
+### Rule 1 — Always link `runtime/styles.css` BEFORE author CSS
+
+```html
+<head>
+  <link rel="stylesheet" href="../../runtime/styles.css" />   <!-- FIRST -->
+  <link rel="stylesheet" href="../../assets/fonts/fonts.css" />
+  <style>/* your overrides */</style>
+</head>
+```
+
+Without this, `#stage` has no default `color`/`background-color` and
+the browser falls back to **black-on-white** — invisible against the
+dark backgrounds you probably want.
+
+### Rule 2 — If you set `background: light` on ANY element, also set `color: dark` (and vice versa)
+
+`#stage` defaults to `background: var(--mvm-bg, #0a0a0f)` and
+`color: var(--mvm-text, #fff)`.  Every descendant inherits the white
+text **unless** you (or a class you apply) explicitly changes it.
+
+This is the #1 mistake: an agent writes
+```html
+<div style="background: white; padding: 30px;">
+  <h2>这个会看不见</h2>
+</div>
+```
+…and the heading inherits white → invisible on white card. **Solution:**
+use the paired utility classes, NEVER write half-pairs.
+
+| If your container has… | Use this class |
+|---|---|
+| Dark background | `.mvm-card-dark` — paints dark + sets text white |
+| Light background | `.mvm-card-light` — paints light + sets text dark |
+| Need just text color | `.mvm-light` (white) / `.mvm-dark` (#0a0a0f) |
+| Need full-scene theme flip | `.mvm-bg-light` / `.mvm-bg-dark` on the scene wrapper |
+| Need a tonal mute | `.mvm-light-muted` / `.mvm-dark-muted` |
+
+```html
+<!-- ✅ Good — paired class -->
+<div class="mvm-card-light">
+  <h2>清晰可见 — 亮卡片自动配深字</h2>
+</div>
+
+<!-- ✅ Good — explicit pair -->
+<div style="background:#FFD400; color:#1a0a08; padding:30px;">
+  <h2>also fine — explicit dark text on yellow</h2>
+</div>
+
+<!-- ❌ Bad — only background, color forgotten -->
+<div style="background: white; padding: 30px;">
+  <h2>invisible — inherits white from #stage</h2>
+</div>
+```
+
+### Rule 3 — Run the contrast checker (it's automatic during render)
+
+`runtime/contrast-check.js` runs on every `mvm-seek` tick and walks
+every visible text element under `#stage`, computes the WCAG luminance
+ratio against its effective background, and emits a `console.warn` for
+any element under **2.2:1** (essentially invisible).
+
+`render.mjs` collects those warnings and prints a one-shot summary at
+the end of the export so you never ship an MP4 with hidden text:
+
+```
+[mvm] ⚠ 2 LOW-CONTRAST TEXT ISSUE(S) DETECTED
+[mvm]   • text "看不见" (color rgb(255,255,255)) on background rgba(255,255,255,1)
+[mvm]     at <h2.subtitle>. Fix: add .mvm-light / .mvm-card-dark, or set color/background explicitly.
+```
+
+`templates/contrast-test.html` is a self-test page with 4 cells (2 bad
++ 2 good) you can use as a regression test of the safety net.
+
+### Theming an entire composition
+
+```html
+<!-- Light-themed composition: flip --mvm-bg and --mvm-text on #stage -->
+<div id="stage"
+     style="--mvm-bg: #f7f5ef; --mvm-text: #0a0a0f;"
+     data-width="1920" data-height="1080" data-fps="30" data-duration="10">
+  <!-- now every default-text descendant is DARK on light, automatic -->
+</div>
+```
+
 ## Keeping text readable on busy backgrounds
 
 Shader / particle / video backgrounds tend to swallow typography.  The

@@ -3,8 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <title>{{TITLE}}</title>
+  <!-- CRITICAL: always link runtime/styles.css FIRST so the white-on-dark
+       defaults and `:root { --mvm-bg / --mvm-text }` tokens are loaded
+       before any author overrides. -->
   <link rel="stylesheet" href="../runtime/styles.css" />
   <link rel="stylesheet" href="../assets/fonts/fonts.css" />
+  <style>
+    /* ============================================================
+     * Author-side overrides — keep changes here.
+     *
+     * COLOR CONTRACT (do NOT break these):
+     *  • #stage defaults to background #0a0a0f / text #ffffff.
+     *  • Every text element under #stage inherits white automatically.
+     *  • If you set `background: white/light` on ANY element, ALSO set
+     *    `color: dark` on that element. The runtime contrast checker
+     *    (contrast-check.js) will console.warn otherwise.
+     *  • Easiest fix: use `.mvm-card-dark` / `.mvm-card-light` —
+     *    they pair background + text for guaranteed readability.
+     * ============================================================ */
+  </style>
 </head>
 <body class="mvm-preview">
 
@@ -21,12 +38,23 @@
        data-fps="30"
        data-duration="10">
 
-    <!-- background layer -->
+    <!-- 1. Background layer (shader / canvas / solid).  ALWAYS dark by
+         default — switch to a light theme by setting
+         `style="--mvm-bg: #f7f5ef; --mvm-text: #0a0a0f"` on #stage. -->
     <div data-background="aurora"></div>
 
-    <!-- foreground scene -->
-    <div class="scene stack">
-      <h1 class="title text-aurora"
+    <!-- 2. Scene wrapper with built-in dark scrim that lifts text off
+         the shader. `data-hide-mode="visibility"` (default) keeps
+         already-visible siblings stable when others fade in. -->
+    <div class="scene scene-scrim"
+         data-clip data-hide-mode="visibility"
+         data-start="0" data-duration="10"
+         style="position: absolute; inset: 0; z-index: 10;">
+
+      <!-- Headlines inherit color from #stage automatically (white).
+           Pair `.title` (思源宋体 Black by default) with `.text-readable`
+           when the background is busy. -->
+      <h1 class="title text-aurora text-readable"
           data-clip
           data-start="0.2"
           data-duration="9"
@@ -38,16 +66,24 @@
          data-clip
          data-start="1.4"
          data-duration="8"
-         data-animation="fadeInUp"
-         data-in-duration="0.9">由 motion-video-maker 制作</p>
+         data-animation="unmaskUp"
+         data-in-duration="0.8"
+         data-easing="easeInOutQuart">由 motion-video-maker 制作</p>
     </div>
 
-    <!-- letter-box / frame overlay -->
+    <!-- 3. Optional letter-box / frame overlay (always above content) -->
     <div class="frame"></div>
 
   </div>
 
+  <!-- Runtime — load order matters:
+       spring → timeline → components → shaders → transitions → effects → contrast-check -->
+  <script src="../runtime/spring.js"></script>
   <script src="../runtime/timeline.js"></script>
   <script src="../runtime/components.js"></script>
+  <script src="../runtime/shaders.js"></script>
+  <script src="../runtime/transitions.js"></script>
+  <script src="../runtime/effects.js"></script>
+  <script src="../runtime/contrast-check.js"></script>
 </body>
 </html>

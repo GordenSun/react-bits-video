@@ -46,6 +46,12 @@ const html = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
   <title>${name}</title>
+  <!-- runtime/styles.css MUST load before any author CSS so the
+       --mvm-bg / --mvm-text tokens are available and the white-on-dark
+       defaults apply.  Color contract:
+         • #stage default: bg #0a0a0f / text #ffffff (inherited)
+         • Any element with background:light MUST also set color:dark.
+         • Easiest: use .mvm-card-dark / .mvm-card-light pairs. -->
   <link rel="stylesheet" href="../../runtime/styles.css" />
   <link rel="stylesheet" href="../../assets/fonts/fonts.css" />
 </head>
@@ -57,23 +63,40 @@ const html = `<!DOCTYPE html>
        data-fps="${opts.fps}"
        data-duration="${opts.duration}">
 
+    <!-- Background — dark by default; set inline
+         style="--mvm-bg: #f7f5ef; --mvm-text: #0a0a0f"  on #stage
+         to flip to a light-themed composition. -->
     <div data-background="${opts.bg}"></div>
 
-    <div class="scene stack">
-      <h1 class="title text-aurora"
+    <!-- Scene wrapper with built-in dark scrim to lift text off the
+         shader.  data-hide-mode="visibility" (default) keeps already-
+         visible siblings stable when others fade in. -->
+    <div class="scene scene-scrim"
+         data-clip data-hide-mode="visibility"
+         data-start="0" data-duration="${opts.duration}"
+         style="position: absolute; inset: 0; z-index: 10;">
+
+      <h1 class="title text-aurora text-readable"
           data-clip data-start="0.3" data-duration="${opts.duration - 0.3}"
           data-text-animation="split-text"
           data-stagger="0.06" data-char-duration="0.9">${name}</h1>
+
       <p class="subtitle"
          data-clip data-start="1.4" data-duration="${opts.duration - 1.4}"
-         data-animation="fadeInUp" data-in-duration="0.9">由 motion-video-maker 制作</p>
+         data-animation="unmaskUp" data-in-duration="0.8"
+         data-easing="easeInOutQuart">由 motion-video-maker 制作</p>
     </div>
 
     <div class="frame"></div>
   </div>
 
+  <script src="../../runtime/spring.js"></script>
   <script src="../../runtime/timeline.js"></script>
   <script src="../../runtime/components.js"></script>
+  <script src="../../runtime/shaders.js"></script>
+  <script src="../../runtime/transitions.js"></script>
+  <script src="../../runtime/effects.js"></script>
+  <script src="../../runtime/contrast-check.js"></script>
 </body>
 </html>
 `;
