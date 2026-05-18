@@ -119,6 +119,20 @@ body.mvm-preview #stage {
 }
 
 /* ============================================================
+ * CAMERA MOVES — `.mvm-cam` wrapper for scene-level zoom / pan / rotate
+ *
+ * Wrap a scene container in <div class="mvm-cam" data-camera-zoom="1.12">
+ * to get a film-style slow push-in over the clip's lifetime.  The
+ * runtime writes `--mvm-cam-transform` on the element; we apply it via
+ * `transform-origin: center center` so push-ins feel like the camera is
+ * dollying through the frame, not stretching a corner.
+ * ============================================================ */
+.mvm-cam {
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* ============================================================
  * TYPOGRAPHY DEFAULTS & OVERFLOW GUARDS
  *
  * Agents constantly forget that:

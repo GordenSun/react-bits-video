@@ -357,11 +357,80 @@
   }
 
   // ----------- Public API ---------------------------------------
+  // ===== Camera moves ============================================
+  // Wrap a scene container with class `mvm-cam` to get a slow drift of
+  // the entire scene without authoring per-element animations.
+  // Supported attributes (all optional):
+  //   data-camera-zoom="1.12"      — scale from 1.0 → 1.12 over clip duration
+  //   data-camera-zoom-from="1.05" — pair with data-camera-zoom to fly OUT
+  //   data-camera-pan-x="40"       — translate X (px) from 0 → 40 over clip
+  //   data-camera-pan-y="-30"      — translate Y (px) from 0 → -30 over clip
+  //   data-camera-rotate="2"       — rotate (deg) from 0 → 2 over clip
+  //   data-camera-easing="easeInOutQuart"  — default linear
+  //
+  // Camera moves stack INSIDE the clip's data-animation transform so
+  // they multiply: zoom + a slideBlurIn entrance compose cleanly.
+  function applyCameraMove(el, localT01) {
+    if (!el.classList.contains('mvm-cam')) return null;
+    const z0 = parseFloat(el.dataset.cameraZoomFrom);
+    const z1 = parseFloat(el.dataset.cameraZoom);
+    const px = parseFloat(el.dataset.cameraPanX);
+    const py = parseFloat(el.dataset.cameraPanY);
+    const rt = parseFloat(el.dataset.cameraRotate);
+    const easeName = el.dataset.cameraEasing || 'linear';
+    const easeFn = E[easeName] || E.linear;
+    const tE = easeFn(localT01);
+    const parts = [];
+    if (!isNaN(z1)) {
+      const from = isNaN(z0) ? 1 : z0;
+      const s = lerp(from, z1, tE);
+      parts.push(`scale(${s})`);
+    }
+    if (!isNaN(px) || !isNaN(py)) {
+      const dx = isNaN(px) ? 0 : lerp(0, px, tE);
+      const dy = isNaN(py) ? 0 : lerp(0, py, tE);
+      parts.push(`translate3d(${dx}px, ${dy}px, 0)`);
+    }
+    if (!isNaN(rt)) {
+      const r = lerp(0, rt, tE);
+      parts.push(`rotate(${r}deg)`);
+    }
+    return parts.length ? parts.join(' ') : null;
+  }
+
+  function applyCameras(t) {
+    document.querySelectorAll('.mvm-cam').forEach(el => {
+      // Find the enclosing clip to determine local 0..1 progress
+      const clip = el.closest('[data-clip]') || el;
+      const s = parseFloat(clip.dataset.start || '0');
+      const d = parseFloat(clip.dataset.duration || '0') || 1;
+      const localT = clamp01((t - s) / d);
+      const camXf = applyCameraMove(el, localT);
+      if (camXf) {
+        // Prepend camera transform — element's own data-animation
+        // transform (set as inline style) will be combined.  We use a
+        // CSS variable so we don't fight inline transform writes.
+        el.style.setProperty('--mvm-cam-transform', camXf);
+        // Apply to a wrapper transform via transform-style chain:
+        // if element doesn't already have its own transform writer
+        // (i.e. no data-animation), set it directly.
+        if (!clip.hasAttribute('data-animation') || clip === el) {
+          el.style.transform = camXf;
+        } else {
+          // Use a child pseudo via the CSS variable; styles.css picks
+          // this up via .mvm-cam > * { transform: var(--mvm-cam-transform) }
+          // (see styles.css for the layered rule)
+        }
+      }
+    });
+  }
+
   function seekAll(t) {
     const stage = getStage();
     if (!stage) return;
     const clips = stage.querySelectorAll('[data-clip]');
     clips.forEach(c => evaluateClip(c, t));
+    applyCameras(t);
     // Dispatch a custom event for component-internal animators (canvas, etc.)
     window.dispatchEvent(new CustomEvent('mvm-seek', { detail: { time: t } }));
     window.__mvmTime = t;

@@ -109,6 +109,151 @@ Borrowed from Hyperframes. Failing these is the #1 reason a video feels
      data-animation="fadeIn"></div>   <!-- ✅ no data-animation-out -->
 ```
 
+## Style Presets — 8 recipes to start from or hybridise
+
+Each preset is a **complete vibe**: palette + typography + animation
+pattern + transition + pacing. They're not classes you import; they're
+**templates you copy from** when you want a recognisable look. Hybridise
+freely — use Asian Ink typography with Glitch Tech transitions, etc.
+
+### 1. Cinematic Trailer
+
+> Big serif over warm darkness. Long beats, single ideas per scene.
+> Feels like a film opening.
+
+| | |
+|---|---|
+| **Palette** | `warm-glow` / `warm-ember` / `mono-deep` |
+| **Background** | `meta-balls` (slow `data-intensity="0.8"`) / `lightning` (sparingly) / solid `#0a0606` |
+| **Typography** | `.title-3xl` or `.title-2xl`, `cn-serif` (Noto Serif SC), `letter-spacing: 0.04em` |
+| **Text color** | `.text-on-warm` (off-white) or `#FFE87A` |
+| **Entrance** | `data-text-animation="split-text"` with `data-stagger="0.06"` `data-easing="easeOutQuart"` |
+| **Pacing** | 5–8s per scene, hold one idea at a time |
+| **Transitions** | `flash` (0.4s) between climactic beats, `iris` (1.0s) for softer cuts |
+| **Camera** | `data-camera-zoom="1.08"` (slow push-in) on hero shots |
+| **Avoid** | bright pinks, fast cuts, springBouncy, glitch-text |
+
+### 2. Glitch Tech / Cyberpunk
+
+> Hard cuts, electric edges, decrypting text. Reads "future" or "hacker".
+
+| | |
+|---|---|
+| **Palette** | `cool-neon` / `prismatic-cyber` / `mono-ink` |
+| **Background** | `lightning` (`data-intensity="1.4"`), `prismatic-burst`, `letter-glitch` canvas |
+| **Typography** | `.title-xl` mono fonts (`cn-mono` / JetBrains Mono), `text-transform: uppercase`, `letter-spacing: 0.25em` |
+| **Text color** | `.text-on-prismatic` (white + halo) or `#5BC0EB` / `#FFD400` accents |
+| **Entrance** | `data-text-animation="decrypted-text"` / `glitch-text` / `scramble-text` |
+| **Pacing** | 1.5–3s clips, **lots of them**. Quick rhythm. |
+| **Transitions** | `glitch` (0.5s) almost everywhere, occasional `pixel-dissolve` (0.4s) |
+| **Effects** | `data-effect="electric-border"` on hero card, `star-border` accents |
+| **Avoid** | cn-brush, slow ease, warm palettes, single-scene 8s holds |
+
+### 3. Asian Ink / 中国风水墨
+
+> 留白、宋体、行楷。Soft paper background, brushed accents, slow rhythm.
+
+| | |
+|---|---|
+| **Palette** | `light-paper` (background) or `warm-ember` (subtle dark) |
+| **Background** | solid `#f7f5ef` paper, or `aurora warm-ember` very faint, or a `iridescence` shader at `data-intensity="0.3"` |
+| **Typography** | `cn-serif` (Noto Serif SC) for body, `cn-brush` (Ma Shan Zheng / Long Cang) for hero accents, `.title-2xl` to `.title-3xl` |
+| **Text color** | `.text-on-light` (deep ink `#1a0a08`) or `#3a1c08` |
+| **Entrance** | `data-animation="unmaskUp"` or `unmaskRight` slow (`data-in-duration="1.2"`), `data-easing="easeInOutQuart"` |
+| **Pacing** | 6–10s per scene. Let the brush strokes breathe. |
+| **Transitions** | `wipe-up` or `wipe-left` (1.2s) with `data-color="#f7f5ef"`, soft `flash` (0.5s) |
+| **Special** | red seal stamp: small square `mvm-card` with cn-brush "印", `data-animation="dropIn"` |
+| **Avoid** | electric-border, glitch, neon palettes, mono fonts |
+
+### 4. Data Story
+
+> Hero numbers + supporting cards. Each stat lands with weight.
+
+| | |
+|---|---|
+| **Palette** | `cool-deep` (background), accents via `.mvm-stat--red/cool/warm` borders |
+| **Background** | `liquid-ether cool-deep` or `iridescence cool-violet`, kept moving but quiet |
+| **Typography** | `.mvm-stat` preset (built-in 120px digit + label), `.title-lg` for section headers |
+| **Entrance** | `data-text-animation="count-up"` + `data-odometer="true"` on every number; stat cards `data-animation="magneticIn"` / `dropIn` / `slideBlurIn` (alternate for variety) |
+| **Pacing** | 3.5–5s per stat, 1s in / 2s hold / 1s out |
+| **Transitions** | `iris` (0.7s) between stat groups, `pixel-dissolve` between sections |
+| **Layout** | 1, 2, or 3 stats stacked vertically with `gap: 32px` |
+| **Avoid** | text-aurora, glitch-text, busy shaders behind the numbers |
+
+### 5. Pop Vibrant
+
+> Saturated colors, bouncy springs, candy. Reads "consumer brand" or
+> "playful product".
+
+| | |
+|---|---|
+| **Palette** | `prismatic-vapor` / `prismatic-magic` / custom `data-colors="#FF3CAC,#FFD400,#2af598,#5BC0EB"` |
+| **Background** | `meta-balls`, `iridescence` at high `data-intensity="1.2"` |
+| **Typography** | `cn-sans` (Noto Sans SC) bold, `.title-xl`/`title-2xl`, can mix multiple sizes in one scene |
+| **Entrance** | `data-easing="springBouncy"` or `springWobbly` everywhere; `data-animation="cubeIn"` / `flipInX` / `magneticIn` (rotate per scene for variety) |
+| **Pacing** | 3–5s clips, lots of motion |
+| **Transitions** | `pixel-dissolve` with bright `data-color="#FFD400"`, occasional `flash` |
+| **Avoid** | cn-serif, slow ease, mono palette |
+
+### 6. Minimal Editorial
+
+> 90% empty space. Tiny eyebrow over a giant serif. One movement at a time.
+
+| | |
+|---|---|
+| **Palette** | `mono-graphite` or solid `#0a0a14` (no shader) |
+| **Background** | `<div>` with solid color OR `iridescence cool-violet` at `data-intensity="0.25"` |
+| **Typography** | One huge `.title-3xl` (160px) + one tiny `.body-sm` eyebrow; serif everywhere |
+| **Entrance** | `unmaskUp` very slow (`data-in-duration="1.4"`), `easeInOutQuart` |
+| **Pacing** | 8–12s per scene, very few scenes (3–4 total in 30s) |
+| **Camera** | `data-camera-zoom="1.06"` ken-burns push on background, **never on text** |
+| **Transitions** | `wipe-up` (1.2s) only |
+| **Avoid** | crowded compositions, multiple animations per scene, decorative effects |
+
+### 7. Liquid Dreamy
+
+> Iridescent shaders, soft text, ethereal pacing. Reads "calm" or "luxury".
+
+| | |
+|---|---|
+| **Palette** | `cool-violet` / `prismatic-vapor` |
+| **Background** | `iridescence` (`data-intensity="0.7" data-scale="1.4"`), layered with a `aurora` at low opacity |
+| **Typography** | `cn-wenkai` (LXGW WenKai), `.title-2xl`, `letter-spacing: 0.12em` |
+| **Text color** | `.text-on-cool-soft` (warm cream) |
+| **Entrance** | `data-animation="slideBlurIn"` `data-easing="springGentle"`; `blur-text` for body |
+| **Pacing** | 6–8s scenes, slow drift |
+| **Transitions** | long `flash` (0.8s) with `data-color="#9d8df1"` (lavender), `iris` (1.2s) |
+| **Avoid** | hard cuts, glitch, springBouncy, primary colors |
+
+### 8. Documentary
+
+> Sepia-ish, slow zoom on stills, somber typography, long holds.
+
+| | |
+|---|---|
+| **Palette** | `warm-autumn` / `mono-graphite` (desaturated) |
+| **Background** | A real `<img>` photo (b/w or duotone via CSS `filter: grayscale(80%) sepia(20%)`) OR `aurora warm-autumn` at low intensity |
+| **Typography** | `cn-serif`, `.title-lg`/`title-md`, body uses `.body-md` |
+| **Entrance** | `fadeIn` + `data-camera-zoom="1.15"` (slow ken-burns); subtitles use `unmaskUp` |
+| **Pacing** | 8–14s per scene, **lots of held screen time** |
+| **Transitions** | `wipe-right` (1.5s) only; very slow `flash` (0.6s) for chapter breaks |
+| **Avoid** | shaders, bright colors, fast text animations |
+
+### Hybridising — yes, do it
+
+The presets are starting points, not boxes. Real "stand-out" videos
+cross-pollinate:
+
+- **"Cinematic + Glitch"** — warm palette + serif type + occasional
+  glitch transition + decrypted-text eyebrow. Hero shot stays cinematic,
+  intro chyrons feel tech.
+- **"Asian Ink + Data Story"** — paper background + ink red stat
+  numbers + cn-brush labels. Annual report visual language.
+- **"Liquid Dreamy + Pop Vibrant"** — iridescent shader + bouncy spring.
+  Reads "beauty / cosmetics brand".
+
+When in doubt: **commit to one style for 80% of the runtime, sprinkle
+the other style on 1 scene as contrast**. Pure-blend rarely reads.
 
 ```
 motion-video-maker/
@@ -125,6 +270,89 @@ motion-video-maker/
 │                   # raycast-deep-dive-v3/ (40s v3: + electric-border / image-trail / odometer)
 └── reference/      # components.md, workflow.md
 ```
+
+## Creative Latitude — these are tools, not training wheels
+
+The Hard Rules above prevent **broken** videos. They are NOT a recipe for
+**good** videos. Many compositions look identical because agents stop at
+"safe and lint-clean" instead of pushing the medium. **Push the medium.**
+
+What "push the medium" means in practice:
+
+1. **Pick a STYLE first, primitives second.** Don't reach for `split-text`
+   + `fadeIn` + `meta-balls` by reflex. Decide what the video should
+   *feel* like (see [Style decision tree](#style-decision-tree)), then
+   pick primitives that serve that feeling. The same primitive read
+   differently in different styles — `split-text` at 0.04 stagger feels
+   urgent and confident; the same animation at 0.2 stagger with `springGentle`
+   easing feels meditative.
+
+2. **Combine primitives to invent new effects.** Every "signature" effect
+   in this Skill (electric-border, image-trail, odometer flip) is a
+   composition of simpler parts. You can do the same:
+   - `mask-text` + `gradient-text` on a duplicate layered behind = neon
+     edge title that bleeds color through the negative space.
+   - `image-trail` + a small camera-pan = parallax-feeling depth.
+   - Two `liquid-ether` shaders with different `data-palette` and
+     opposite `data-scale`, blended `mix-blend-mode: screen` =
+     iridescent fluid impossible to get with one shader.
+   - `wave-text` with `data-amplitude="3"` + `springSnap` = subtle
+     "breathing" hero title for slow scenes.
+
+3. **Bend the timeline.** A 30s video doesn't need 6 scenes of 5s each.
+   - Cinematic trailers spend 8s on a single hero shot then sprint
+     through 4 quick cuts in 6s.
+   - Glitch / tech videos use very short clips (1.2–2s) with hard cuts
+     between shaders + glitch transitions.
+   - Editorial / minimalist videos hold one scene for 12s with a slow
+     `kenBurnsIn` on the background.
+
+4. **Custom animations are welcome.** If none of the built-in
+   `data-animation` values fit, you can:
+   - Write your own keyframe-like animation by listening to `mvm-seek`
+     and applying transforms based on `event.detail.time`. See
+     `runtime/components.js` for the pattern.
+   - Use `data-effect="custom"` with inline `style="--my-anim-progress: ..."`
+     to drive your own CSS variables off the timeline.
+   - Compose multiple `data-animation` by nesting elements with
+     independent animations.
+
+5. **Camera moves**. Wrap a scene in `<div class="mvm-cam" data-camera-zoom="1.15"
+   data-camera-pan-x="-40" data-camera-pan-y="20">` and the whole scene
+   slowly zooms / pans across its lifetime. Subtle camera moves are the
+   single biggest "I am watching a film, not a slideshow" cue.
+
+You are encouraged to read users' descriptive cues literally and translate
+them. "Cinematic", "elegant", "punchy", "ink wash", "data-driven", "playful",
+"otherworldly", "vintage", "futurist", "documentary" — each maps to a
+different combination of palette / typography / motion. See
+[Style Presets](#style-presets) for 8 ready-made recipes you can adopt or
+hybridise.
+
+## Style decision tree — pick by user intent
+
+When the user describes the *feeling* but not the parts, use this map:
+
+| User mentions... | Style preset | Why |
+|---|---|---|
+| "电影感 / cinematic / trailer / epic" | **Cinematic Trailer** | slow + big serif + warm/mono + flash transitions |
+| "科技 / cyber / tech / futurist / glitch" | **Glitch Tech** | electric-border + glitch-text + prismatic/cool + fast cuts |
+| "水墨 / 中国风 / 书法 / 古典 / ink" | **Asian Ink** | cn-brush + paper palette + slow unmask + Ma Shan Zheng |
+| "数据 / data / report / 业绩 / stats" | **Data Story** | odometer + mvm-stat + cards + drop / magnetic entry |
+| "活泼 / playful / pop / bouncy / 卡通" | **Pop Vibrant** | saturated + springBouncy + meta-balls + cube/flip |
+| "极简 / minimal / 高级 / editorial / 杂志" | **Minimal Editorial** | huge serif + lots of whitespace + slow ken burns |
+| "梦幻 / 流体 / liquid / dreamy / 治愈" | **Liquid Dreamy** | iridescence + slow + soft + warm-soft tones |
+| "纪录片 / documentary / 历史 / 沉稳" | **Documentary** | desaturated + ken-burns + long holds + serif body |
+| 没说，但内容像 PPT 介绍 | **Cinematic Trailer** | safest default, looks production-grade |
+| 没说，但内容是产品发布 | **Glitch Tech** or **Cinematic** | depends on product vibe |
+
+If the user mixes cues ("中国风但要现代感"), **hybridise**: take Asian Ink's
+typography + palette and Cinematic Trailer's camera moves + flash.
+
+**You decide.** Don't always ask back — read the prompt for tone cues and
+commit to a style. Variety is the goal.
+
+---
 
 **Every composition MUST include this script chain in this order:**
 

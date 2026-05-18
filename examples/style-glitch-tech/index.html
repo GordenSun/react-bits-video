@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SYSTEM · ONLINE — Glitch Tech Style Example</title>
+<!-- ============================================================
+     Demonstrates the "Glitch Tech / Cyberpunk" style preset.
+     Pacing is the opposite of style-asian-ink:
+     - 1.5–3s clips (lots of them)
+     - hard cuts with glitch transitions
+     - electric-border on the hero card
+     - decrypted-text / glitch-text everywhere
+     - monospaced typography only
+     - prismatic-cyber + cool-neon palettes
+     ============================================================ -->
+<link rel="stylesheet" href="../../runtime/styles.css">
+<link rel="stylesheet" href="../../assets/fonts/fonts.css">
+<style>
+  /* Scanline overlay — gives every scene a subtle CRT feel.
+     Sits above shaders but below text via z-index ordering. */
+  .scanlines {
+    position: absolute; inset: 0; z-index: 8;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px,
+      transparent 1px, transparent 4px
+    );
+    mix-blend-mode: overlay;
+  }
+  /* HUD corner brackets — corner crops to make the frame feel like a
+     targeting reticle. */
+  .hud-corner {
+    position: absolute;
+    width: 60px; height: 60px;
+    border: 3px solid #5BC0EB;
+    z-index: 30;
+  }
+  .hud-tl { top: 40px;    left: 40px;    border-right:none; border-bottom:none; }
+  .hud-tr { top: 40px;    right: 40px;   border-left: none; border-bottom:none; }
+  .hud-bl { bottom: 40px; left: 40px;    border-right:none; border-top:   none; }
+  .hud-br { bottom: 40px; right: 40px;   border-left: none; border-top:   none; }
+  /* Data terminal text style */
+  .term {
+    font-family: 'JetBrains Mono', monospace;
+    color: #5BC0EB;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-weight: 600;
+  }
+  .term-warn { color: #FFD400; }
+  .term-err  { color: #FF6363; }
+  .term-ok   { color: #2af598; }
+  /* RGB-split title shadow */
+  .rgb-split {
+    text-shadow:
+      -2px 0 0 #FF6363,
+       2px 0 0 #5BC0EB,
+       0 0 18px rgba(0,0,0,0.95);
+  }
+</style>
+</head>
+<body class="mvm-preview">
+<div id="stage"
+     data-composition-id="style-glitch-tech"
+     data-width="1920" data-height="1080"
+     data-fps="30" data-duration="24">
+
+  <!-- Persistent HUD overlay — always on -->
+  <div class="hud-corner hud-tl"></div>
+  <div class="hud-corner hud-tr"></div>
+  <div class="hud-corner hud-bl"></div>
+  <div class="hud-corner hud-br"></div>
+
+  <!-- Persistent corner badge -->
+  <p class="term term-err"
+     style="position:absolute; top:60px; left:120px; font-size: 18px; z-index: 25; margin:0;">
+     ◉ REC · 4K · 30FPS · SYS://MVM
+  </p>
+  <p class="term"
+     style="position:absolute; bottom:60px; right:120px; font-size: 18px; z-index: 25; margin:0;">
+     RUN-ID 8F·3C·A1·7E
+  </p>
+
+
+  <!-- ═══════════ SCENE 1  (0–3s)  Boot ═══════════ -->
+  <div data-background="lightning"
+       data-palette="cool-neon" data-intensity="1.5" data-seed="42"
+       data-clip data-start="0" data-duration="3"
+       data-animation="fadeIn" data-in-duration="0.3"></div>
+  <div class="scanlines"
+       data-clip data-start="0" data-duration="24"></div>
+
+  <div class="scene-scrim scene-scrim-strong"
+       data-clip data-hide-mode="visibility"
+       data-start="0" data-duration="3"
+       style="position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 14px;">
+
+    <p class="term"
+       style="font-size: 26px;"
+       data-clip data-start="0.1" data-duration="2.7"
+       data-text-animation="decrypted-text" data-anim-duration="0.9">[ SYSTEM BOOT ]</p>
+
+    <p class="term-warn term"
+       style="font-size: 22px;"
+       data-clip data-start="0.8" data-duration="2.1"
+       data-text-animation="type-text" data-cps="40"
+       data-easing="linear">Initializing motion subsystem...</p>
+
+    <p class="term-ok term"
+       style="font-size: 22px;"
+       data-clip data-start="1.8" data-duration="1.2"
+       data-text-animation="type-text" data-cps="60"
+       data-easing="linear">OK — ready.</p>
+  </div>
+
+  <div data-transition="glitch" data-start="2.7" data-duration="0.5"></div>
+
+
+  <!-- ═══════════ SCENE 2  (3–6s)  Title reveal ═══════════ -->
+  <div data-background="prismatic-burst"
+       data-palette="prismatic-cyber" data-intensity="1.1"
+       data-clip data-start="3" data-duration="3"
+       data-animation="fadeIn" data-animation-out="fadeOut"
+       data-in-duration="0.2" data-out-duration="0.2"></div>
+
+  <div class="scene-scrim"
+       data-clip data-hide-mode="visibility"
+       data-start="3" data-duration="3"
+       style="position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 20px;">
+
+    <p class="term term-warn"
+       style="font-size: 24px;"
+       data-clip data-start="3.1" data-duration="2.8"
+       data-text-animation="scramble-text" data-anim-duration="0.7">// CHAPTER 01</p>
+
+    <h1 class="title-2xl rgb-split"
+        style="font-family: 'JetBrains Mono', monospace; color: #ffffff;
+               letter-spacing: 0.06em;
+               padding: 16px 50px;
+               background: rgba(8,8,16,0.6);"
+        data-clip data-start="3.4" data-duration="2.4"
+        data-text-animation="glitch-text" data-intensity="0.8"
+        data-effect="electric-border"
+        data-color="#5BC0EB" data-color2="#FF6363" data-color3="#FFD400"
+        data-intensity="1.4" data-speed="1.6" data-padding="20" data-border-radius="0">MOTION//VIDEO</h1>
+
+    <p class="term"
+       style="font-size: 18px;"
+       data-clip data-start="4.0" data-duration="1.8"
+       data-text-animation="type-text" data-cps="32"
+       data-easing="linear">> rendering pipeline activated_</p>
+  </div>
+
+  <div data-transition="glitch" data-start="5.7" data-duration="0.4"></div>
+
+
+  <!-- ═══════════ SCENE 3  (6–9s)  Hard cut to stats ═══════════ -->
+  <div data-background="liquid-ether"
+       data-palette="cool-neon" data-intensity="1.1" data-seed="7"
+       data-clip data-start="6" data-duration="3"
+       data-animation="fadeIn" data-animation-out="fadeOut"
+       data-in-duration="0.2" data-out-duration="0.2"></div>
+
+  <div class="scene-scrim"
+       data-clip data-hide-mode="visibility"
+       data-start="6" data-duration="3"
+       style="position:absolute; inset:0; z-index:10; display:flex; align-items:center; justify-content:center; gap: 90px;">
+
+    <div class="mvm-stat mvm-stat--cool"
+         style="background: rgba(8,16,24,0.78); border-left-color:#5BC0EB;"
+         data-clip data-start="6.1" data-duration="2.7"
+         data-animation="glitchIn" data-easing="easeOutCubic">
+      <span class="mvm-stat-num"
+            style="color:#5BC0EB; font-family:'JetBrains Mono', monospace;"
+            data-clip data-start="6.2" data-duration="2.5"
+            data-text-animation="count-up" data-odometer="true"
+            data-from="0" data-to="60" data-anim-duration="1.3"
+            data-easing="easeOutExpo">0</span>
+      <span class="mvm-stat-label term" style="color:#a8d8ff; font-size: 28px;">FPS</span>
+    </div>
+
+    <div class="mvm-stat mvm-stat--warm"
+         style="background: rgba(8,16,24,0.78); border-left-color:#FFD400;"
+         data-clip data-start="6.3" data-duration="2.5"
+         data-animation="glitchIn" data-easing="easeOutCubic">
+      <span class="mvm-stat-num"
+            style="color:#FFD400; font-family:'JetBrains Mono', monospace;"
+            data-clip data-start="6.4" data-duration="2.4"
+            data-text-animation="count-up" data-odometer="true"
+            data-from="0" data-to="1920" data-anim-duration="1.4"
+            data-easing="easeOutExpo">0</span>
+      <span class="mvm-stat-label term" style="color:#fbe588; font-size: 28px;">PX/W</span>
+    </div>
+  </div>
+
+  <div data-transition="glitch" data-start="8.7" data-duration="0.4"></div>
+
+
+  <!-- ═══════════ SCENE 4  (9–12s)  Feature manifest ═══════════ -->
+  <div data-background="prismatic-burst"
+       data-palette="prismatic-cyber" data-intensity="0.9" data-seed="13"
+       data-clip data-start="9" data-duration="3"
+       data-animation="fadeIn" data-animation-out="fadeOut"
+       data-in-duration="0.2" data-out-duration="0.2"></div>
+
+  <div class="scene-scrim"
+       data-clip data-hide-mode="visibility"
+       data-start="9" data-duration="3"
+       style="position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 14px;">
+
+    <p class="term term-err"
+       style="font-size: 22px;"
+       data-clip data-start="9.1" data-duration="2.7"
+       data-text-animation="decrypted-text" data-anim-duration="0.6">[ MANIFEST ]</p>
+
+    <p class="term term-ok"
+       style="font-size: 36px;"
+       data-clip data-start="9.4" data-duration="2.4"
+       data-text-animation="type-text" data-cps="36"
+       data-easing="linear">✓ 17 text engines loaded</p>
+    <p class="term term-ok"
+       style="font-size: 36px;"
+       data-clip data-start="9.9" data-duration="2.0"
+       data-text-animation="type-text" data-cps="36"
+       data-easing="linear">✓ 7 shader backgrounds online</p>
+    <p class="term term-ok"
+       style="font-size: 36px;"
+       data-clip data-start="10.4" data-duration="1.5"
+       data-text-animation="type-text" data-cps="36"
+       data-easing="linear">✓ deterministic seed: 0x6D2B79F5</p>
+  </div>
+
+  <div data-transition="pixel-dissolve" data-start="11.7" data-duration="0.5"
+       data-color="#5BC0EB" data-tile="80"></div>
+
+
+  <!-- ═══════════ SCENE 5  (12–16s)  Hero quote ═══════════ -->
+  <div data-background="iridescence"
+       data-palette="cool-violet" data-intensity="0.6" data-scale="1.4" data-seed="99"
+       data-clip data-start="12" data-duration="4"
+       data-animation="fadeIn" data-animation-out="fadeOut"
+       data-in-duration="0.3" data-out-duration="0.3"></div>
+
+  <div class="scene-scrim"
+       data-clip data-hide-mode="visibility"
+       data-start="12" data-duration="4"
+       style="position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 20px;">
+
+    <p class="term"
+       style="font-size: 24px;"
+       data-clip data-start="12.2" data-duration="3.6"
+       data-text-animation="scramble-text" data-anim-duration="0.9">// CORE THESIS</p>
+
+    <h2 class="title-xl"
+        style="font-family: 'Noto Serif SC', serif;
+               color: #ffffff; letter-spacing: 0.06em;
+               text-shadow: 0 0 22px #5BC0EB, 0 0 50px rgba(91,192,235,0.45),
+                            0 6px 16px rgba(0,0,0,0.85);"
+        data-clip data-start="12.4" data-duration="3.4"
+        data-text-animation="split-text"
+        data-stagger="0.06" data-char-duration="0.7"
+        data-easing="springStiff">代码即是镜头</h2>
+
+    <p class="term term-warn"
+       style="font-size: 20px;"
+       data-clip data-start="13.4" data-duration="2.3"
+       data-text-animation="type-text" data-cps="22"
+       data-easing="linear">// code as cinematography</p>
+  </div>
+
+  <div data-transition="glitch" data-start="15.6" data-duration="0.5"></div>
+
+
+  <!-- ═══════════ SCENE 6  (16–20s)  Data grid ═══════════ -->
+  <div data-background="liquid-ether"
+       data-palette="cool-deep" data-intensity="0.9"
+       data-clip data-start="16" data-duration="4"
+       data-animation="fadeIn" data-animation-out="fadeOut"
+       data-in-duration="0.3" data-out-duration="0.3"></div>
+
+  <div class="scene-scrim"
+       data-clip data-hide-mode="visibility"
+       data-start="16" data-duration="4"
+       style="position:absolute; inset:0; z-index:10; display:grid;
+              grid-template-columns: repeat(3, 1fr);
+              align-content: center; justify-items: center;
+              gap: 40px; padding: 0 12%;">
+
+    <!-- 6 grid cells, each glitches in -->
+    <div class="mvm-card-dark term term-ok"
+         style="padding: 30px 24px; font-size: 28px; text-align:center;"
+         data-clip data-start="16.2" data-duration="3.6"
+         data-animation="glitchIn">FRAME_ACCURATE</div>
+    <div class="mvm-card-dark term term-warn"
+         style="padding: 30px 24px; font-size: 28px; text-align:center;"
+         data-clip data-start="16.4" data-duration="3.4"
+         data-animation="glitchIn">SEED_LOCKED</div>
+    <div class="mvm-card-dark term"
+         style="padding: 30px 24px; font-size: 28px; text-align:center;"
+         data-clip data-start="16.6" data-duration="3.2"
+         data-animation="glitchIn">BT709_COLR</div>
+    <div class="mvm-card-dark term"
+         style="padding: 30px 24px; font-size: 28px; text-align:center;"
+         data-clip data-start="16.8" data-duration="3.0"
+         data-animation="glitchIn">FONT_READY</div>
+    <div class="mvm-card-dark term term-warn"
+         style="padding: 30px 24px; font-size: 28px; text-align:center;"
+         data-clip data-start="17.0" data-duration="2.8"
+         data-animation="glitchIn">SRGB_FORCE</div>
+    <div class="mvm-card-dark term term-ok"
+         style="padding: 30px 24px; font-size: 28px; text-align:center;"
+         data-clip data-start="17.2" data-duration="2.6"
+         data-animation="glitchIn">90K_TIMESCALE</div>
+  </div>
+
+  <div data-transition="flash" data-start="19.6" data-duration="0.5"
+       data-color="#5BC0EB"></div>
+
+
+  <!-- ═══════════ SCENE 7  (20–24s)  Sign-off ═══════════ -->
+  <div data-background="lightning"
+       data-palette="mono-deep" data-intensity="1.6" data-seed="77"
+       data-clip data-start="20" data-duration="4"
+       data-animation="fadeIn" data-in-duration="0.3"></div>
+
+  <div class="scene-scrim scene-scrim-strong"
+       data-clip data-hide-mode="visibility"
+       data-start="20" data-duration="4"
+       style="position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 20px;">
+
+    <p class="term term-err"
+       style="font-size: 22px;"
+       data-clip data-start="20.1" data-duration="3.8"
+       data-text-animation="scramble-text" data-anim-duration="0.9">[ END_OF_SIGNAL ]</p>
+
+    <h1 class="title-2xl rgb-split"
+        style="font-family: 'JetBrains Mono', monospace;
+               color: #ffffff; letter-spacing: 0.08em;
+               padding: 18px 60px;"
+        data-clip data-start="20.4" data-duration="3.4"
+        data-text-animation="glitch-text" data-intensity="1.0"
+        data-effect="electric-border"
+        data-color="#5BC0EB" data-color2="#FF6363" data-color3="#FFD400"
+        data-intensity="1.6" data-speed="1.8" data-padding="24" data-border-radius="0">SYS://OK</h1>
+
+    <p class="term term-warn"
+       style="font-size: 20px;"
+       data-clip data-start="21.2" data-duration="2.4"
+       data-text-animation="type-text" data-cps="22"
+       data-easing="linear">github.com/GordenSun/react-bits-video</p>
+  </div>
+
+</div>
+
+<script src="../../runtime/spring.js"></script>
+<script src="../../runtime/timeline.js"></script>
+<script src="../../runtime/components.js"></script>
+<script src="../../runtime/shaders.js"></script>
+<script src="../../runtime/transitions.js"></script>
+<script src="../../runtime/effects.js"></script>
+<script src="../../runtime/contrast-check.js"></script>
+<script src="../../runtime/layout-check.js"></script>
+</body>
+</html>

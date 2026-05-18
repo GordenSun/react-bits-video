@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>留白 · Asian Ink — Style Preset Example</title>
+<!-- ============================================================
+     Demonstrates the "Asian Ink" style preset (see SKILL.md).
+     EVERYTHING here is intentionally opposite to skill-intro:
+     - paper background instead of WebGL shaders
+     - cn-brush calligraphic typography instead of mono/sans
+     - long 7–10s holds instead of 2–5s clips
+     - wipe-up transitions only (no glitch / pixel)
+     - red ink seal stamp accent
+     - slow easeInOutQuart everywhere, no springBouncy
+     ============================================================ -->
+<link rel="stylesheet" href="../../runtime/styles.css">
+<link rel="stylesheet" href="../../assets/fonts/fonts.css">
+<style>
+  /* Paper texture using overlapping radial gradients — keeps body
+     light without needing an external image asset. */
+  body.mvm-preview { background: #d4cdb4; }
+  #stage {
+    background:
+      radial-gradient(ellipse 60% 40% at 30% 20%, rgba(196, 178, 130, 0.22), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 70% 80%, rgba(120, 80, 40, 0.10), transparent 60%),
+      linear-gradient(135deg, #f7f1de 0%, #ebe0c0 100%);
+  }
+  /* Ink wash brush stroke — drawn with a long oblong radial gradient.
+     Use as a decoration that appears behind a title to give it a
+     calligraphic platform. */
+  .ink-stroke {
+    position: absolute;
+    width: 70%;
+    height: 28%;
+    background: radial-gradient(ellipse 100% 50% at center,
+                rgba(20, 14, 8, 0.78) 0%,
+                rgba(20, 14, 8, 0.55) 35%,
+                rgba(20, 14, 8, 0.15) 70%,
+                transparent 100%);
+    filter: blur(1px);
+    z-index: 5;
+    pointer-events: none;
+  }
+  /* Red square ink seal — looks like a Chinese signature stamp. */
+  .seal {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    background: linear-gradient(135deg, #8a1f1f 0%, #b53131 50%, #8a1f1f 100%);
+    border: 3px solid #5a0f0f;
+    color: #fdf4d8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Ma Shan Zheng', 'Long Cang', cursive;
+    font-size: 56px;
+    line-height: 1;
+    box-shadow:
+      inset 0 0 10px rgba(0, 0, 0, 0.3),
+      0 4px 14px rgba(0, 0, 0, 0.35);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+    transform: rotate(-3deg);
+    z-index: 20;
+  }
+  /* Subtle vertical "竖排" line guide — a thin dashed bar on the left
+     gives the composition Chinese-book layout feel. */
+  .v-guide {
+    position: absolute;
+    left: 12%;
+    top: 16%;
+    bottom: 16%;
+    width: 1px;
+    background: repeating-linear-gradient(to bottom,
+      rgba(60, 30, 12, 0.4) 0px,
+      rgba(60, 30, 12, 0.4) 8px,
+      transparent 8px,
+      transparent 16px);
+    z-index: 4;
+  }
+</style>
+</head>
+<body class="mvm-preview">
+<div id="stage"
+     data-composition-id="style-asian-ink"
+     data-width="1920" data-height="1080"
+     data-fps="30" data-duration="32">
+
+  <!-- ═══════════ SCENE 1  (0–8s)  胸有成竹 ═══════════ -->
+  <!-- The whole scene has a slow camera push-in via .mvm-cam +
+       data-camera-zoom so the paper feels like a painting we're
+       walking up to. -->
+  <div class="mvm-cam" data-camera-zoom="1.06" data-camera-easing="easeInOutQuart"
+       data-clip data-hide-mode="visibility"
+       data-start="0" data-duration="7.8"
+       style="position:absolute; inset:0; z-index:1;">
+
+    <div class="v-guide"
+         data-clip data-start="0.4" data-duration="7.2"
+         data-animation="unmaskDown" data-in-duration="1.2"
+         data-easing="easeInOutQuart"></div>
+
+    <!-- Brush stroke behind the title -->
+    <div class="ink-stroke"
+         style="left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-2deg);"
+         data-clip data-start="0.8" data-duration="6.8"
+         data-animation="unmaskLeft" data-in-duration="1.6"
+         data-easing="easeOutQuart"></div>
+
+    <!-- Hero title -->
+    <h1 class="cn-brush"
+        style="position:absolute; left:50%; top:50%;
+               transform: translate(-50%, -50%);
+               font-size: 280px; color: #fdf4d8;
+               letter-spacing: 0.08em;
+               text-shadow: 0 4px 18px rgba(0,0,0,0.4);
+               z-index: 10;"
+        data-clip data-start="1.4" data-duration="6.0"
+        data-text-animation="split-text"
+        data-stagger="0.18" data-char-duration="1.1"
+        data-easing="easeOutQuart">留白</h1>
+
+    <!-- Subtitle, vertical reading order via writing-mode -->
+    <p class="cn-serif"
+       style="position:absolute; right: 12%; top: 16%;
+              writing-mode: vertical-rl;
+              font-size: 38px; color: #2a1808;
+              letter-spacing: 0.5em;
+              line-height: 1.4;"
+       data-clip data-start="3.0" data-duration="4.5"
+       data-animation="unmaskDown" data-in-duration="1.4"
+       data-easing="easeInOutQuart">水墨之间  · 见天地</p>
+
+    <!-- Red ink seal — drops in with bouncy weight -->
+    <div class="seal"
+         style="left: 19%; bottom: 22%;"
+         data-clip data-start="5.0" data-duration="2.5"
+         data-animation="dropIn" data-easing="easeOutQuart">印</div>
+  </div>
+
+  <!-- Wipe transition with PAPER color (not black) -->
+  <div data-transition="wipe-up" data-start="7.4" data-duration="1.2"
+       data-color="#e0d2a8" data-easing="easeInOutQuart"></div>
+
+
+  <!-- ═══════════ SCENE 2  (8.3–17s)  四联 ═══════════ -->
+  <!-- Four-character classical phrase, presented one at a time
+       like brush strokes being added. Camera slowly pans right. -->
+  <div class="mvm-cam" data-camera-pan-x="-30" data-camera-easing="easeInOutQuart"
+       data-clip data-hide-mode="visibility"
+       data-start="8.3" data-duration="8.5"
+       style="position:absolute; inset:0; z-index:1;
+              display:flex; align-items:center; justify-content:center; gap: 80px;">
+
+    <h2 class="cn-brush"
+        style="font-size: 200px; color: #2a1808; line-height: 1;"
+        data-clip data-start="8.7" data-duration="7.6"
+        data-animation="unmaskUp" data-in-duration="1.2"
+        data-easing="easeOutQuart">见</h2>
+    <h2 class="cn-brush"
+        style="font-size: 200px; color: #2a1808; line-height: 1;"
+        data-clip data-start="9.4" data-duration="6.9"
+        data-animation="unmaskUp" data-in-duration="1.2"
+        data-easing="easeOutQuart">山</h2>
+    <h2 class="cn-brush"
+        style="font-size: 200px; color: #2a1808; line-height: 1;"
+        data-clip data-start="10.1" data-duration="6.2"
+        data-animation="unmaskUp" data-in-duration="1.2"
+        data-easing="easeOutQuart">是</h2>
+    <h2 class="cn-brush"
+        style="font-size: 200px; color: #2a1808; line-height: 1;"
+        data-clip data-start="10.8" data-duration="5.5"
+        data-animation="unmaskUp" data-in-duration="1.2"
+        data-easing="easeOutQuart">山</h2>
+  </div>
+
+  <!-- Footer poetic note appears mid-scene -->
+  <p class="cn-wenkai"
+     style="position:absolute; left: 50%; bottom: 14%;
+            transform: translateX(-50%);
+            font-size: 32px; color: #4a2818;
+            letter-spacing: 0.35em;
+            z-index: 10;"
+     data-clip data-start="12.0" data-duration="4.5"
+     data-animation="fadeInUp" data-in-duration="1.0"
+     data-easing="easeInOutQuart">—— 见山不是山，见山还是山</p>
+
+  <div data-transition="wipe-up" data-start="16.0" data-duration="1.0"
+       data-color="#e0d2a8" data-easing="easeInOutQuart"></div>
+
+
+  <!-- ═══════════ SCENE 3  (17–25.5s)  境界 ═══════════ -->
+  <div class="mvm-cam" data-camera-zoom="1.08" data-camera-easing="easeInOutQuart"
+       data-clip data-hide-mode="visibility"
+       data-start="17" data-duration="8.5"
+       style="position:absolute; inset:0; z-index:1;">
+
+    <!-- Big serif eyebrow -->
+    <p class="cn-mono"
+       style="position:absolute; left:50%; top:18%;
+              transform: translateX(-50%);
+              font-size: 28px; color: #6a3018;
+              letter-spacing: 0.6em;
+              opacity: 0.85;"
+       data-clip data-start="17.4" data-duration="7.8"
+       data-text-animation="scramble-text" data-anim-duration="1.6">YI · JING</p>
+
+    <!-- A 5-character literary phrase, vertically -->
+    <h2 class="cn-brush"
+        style="position:absolute; left: 50%; top: 50%;
+               transform: translate(-50%, -50%);
+               writing-mode: vertical-rl;
+               font-size: 160px; color: #1a0e08;
+               letter-spacing: 0.25em;
+               line-height: 1.25;
+               text-shadow: 0 3px 12px rgba(0,0,0,0.18);"
+        data-clip data-start="17.8" data-duration="7.4"
+        data-text-animation="split-text"
+        data-stagger="0.32" data-char-duration="1.0"
+        data-easing="easeOutQuart">远山如画</h2>
+
+    <!-- English translation, small and humble -->
+    <p class="cn-serif"
+       style="position:absolute; right: 12%; bottom: 18%;
+              font-size: 28px; color: #4a2818;
+              letter-spacing: 0.1em;
+              font-style: italic;
+              max-width: 360px; text-align: right; line-height: 1.5;"
+       data-clip data-start="20.0" data-duration="5.0"
+       data-animation="unmaskRight" data-in-duration="1.4"
+       data-easing="easeInOutQuart">"Distant mountains, as if painted."</p>
+
+    <!-- Tiny seal -->
+    <div class="seal"
+         style="left: 13%; bottom: 16%; width: 80px; height: 80px; font-size: 40px;"
+         data-clip data-start="22.0" data-duration="3.0"
+         data-animation="dropIn" data-easing="easeOutQuart">境</div>
+  </div>
+
+  <div data-transition="wipe-up" data-start="24.8" data-duration="1.0"
+       data-color="#e0d2a8" data-easing="easeInOutQuart"></div>
+
+
+  <!-- ═══════════ SCENE 4  (25.5–32s)  Closing ═══════════ -->
+  <div class="mvm-cam" data-camera-zoom="1.04"
+       data-clip data-hide-mode="visibility"
+       data-start="25.5" data-duration="6.5"
+       style="position:absolute; inset:0; z-index:1;
+              display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 32px;">
+
+    <h2 class="cn-brush"
+        style="font-size: 180px; color: #1a0e08;
+               letter-spacing: 0.15em;
+               text-shadow: 0 4px 18px rgba(0,0,0,0.22);"
+        data-clip data-start="25.8" data-duration="5.8"
+        data-text-animation="split-text"
+        data-stagger="0.14" data-char-duration="1.0"
+        data-easing="easeOutQuart">不画自成</h2>
+
+    <p class="cn-serif"
+       style="font-size: 32px; color: #5a3818;
+              letter-spacing: 0.5em; opacity: 0.8;"
+       data-clip data-start="27.5" data-duration="4.0"
+       data-animation="fadeInUp" data-easing="easeInOutQuart">Motion · Video · Maker</p>
+
+    <!-- Final fade-to-paper (only the final scene may exit gracefully) -->
+    <div data-clip data-start="30.8" data-duration="1.2"
+         data-animation="fadeOut" data-in-duration="1.2"
+         style="position:absolute; inset:0; background:#f7f1de; opacity:0; z-index:50;"></div>
+  </div>
+
+</div>
+
+<script src="../../runtime/spring.js"></script>
+<script src="../../runtime/timeline.js"></script>
+<script src="../../runtime/components.js"></script>
+<script src="../../runtime/shaders.js"></script>
+<script src="../../runtime/transitions.js"></script>
+<script src="../../runtime/effects.js"></script>
+<script src="../../runtime/contrast-check.js"></script>
+<script src="../../runtime/layout-check.js"></script>
+</body>
+</html>

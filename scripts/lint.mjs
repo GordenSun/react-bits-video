@@ -88,8 +88,16 @@ while ((m = tagRe.exec(src)) !== null) {
   const closeIdx = src.indexOf(`</${tag}>`, m.index);
   const inner = closeIdx > 0 ? src.slice(m.index + m[0].length, closeIdx) : '';
   const textLen = inner.replace(/<[^>]+>/g, '').trim().length;
-  // Allow large font sizes if text is short
-  const safePx = textLen < 8 ? 200 : textLen < 14 ? 160 : textLen < 22 ? 120 : 80;
+  // Skip empty text (split-text or fade-in only fills via JS later)
+  if (textLen === 0) continue;
+  // Allow large font sizes for very short text (calligraphic hero
+  // characters like 留白 / 见山是山 should be allowed 200–320px).
+  const safePx =
+    textLen <= 2  ? 360 :
+    textLen <= 4  ? 260 :
+    textLen <= 8  ? 200 :
+    textLen <= 14 ? 160 :
+    textLen <= 22 ? 120 : 80;
   if (px > safePx) {
     add('E003', 'error', ln,
       `<${tag}> uses inline font-size:${px}px for ${textLen}-char text → likely to wrap on a 1920-wide stage`,
