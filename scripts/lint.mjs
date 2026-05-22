@@ -21,6 +21,17 @@
  *   W003  missing_palette            [data-background] without data-palette OR data-colors
  *   W004  hard_coded_pixel_size      inline `width:` / `height:` in px that pin to 1920/1080
  *   W005  long_clip_overruns_stage   data-start + data-duration > stage data-duration
+ *   W006  gsap_scrolltrigger         ScrollTrigger / ScrollSmoother / Draggable / Observer
+ *                                    referenced — these need user interaction and don't
+ *                                    fire in deterministic frame-by-frame render mode
+ *   W007  gsap_autoplay_outside_clip gsap.to/from used in inline <script> without being
+ *                                    wired to the bridge — animation will run on the
+ *                                    GSAP root timeline anyway, but if it lives inside a
+ *                                    setTimeout/setInterval it bypasses determinism
+ *   W008  gsap_random_unsafe         gsap.utils.random() in inline script — uses
+ *                                    Math.random under the hood; pass a seeded value
+ *   E006  gsap_missing_bridge        composition uses data-gsap-* attributes but did not
+ *                                    load runtime/gsap-bridge.js — animations won't run
  *
  * Usage:
  *   node scripts/lint.mjs <html-file>            # human output
@@ -203,6 +214,62 @@ clipsParsed.forEach(c => {
       `Shorten data-duration to ${(stageDur - c.s).toFixed(2)} or extend the stage's data-duration.`);
   }
 });
+
+// ---------------- Rule W006: GSAP interaction-only plugins ----------
+// ScrollTrigger / ScrollSmoother / Draggable / Observer are designed for
+// live, scroll/pointer-driven UIs.  In a frame-accurate offline render
+// there is no scroll position and no pointer events, so any animation
+// that depends on them will simply never advance.  Warn the author so
+// they migrate to a GSAP timeline driven by mvm-seek.
+const blockedPluginRe = /\b(ScrollTrigger|ScrollSmoother|Draggable|Observer|InertiaPlugin)\b/g;
+while ((m = blockedPluginRe.exec(src)) !== null) {
+  // Skip mentions inside HTML comments — authors may quote the plugin
+  // names while explaining why they didn't use them.
+  const lineText = lines[lineOf(m.index)] || '';
+  if (lineText.trim().startsWith('<!--') || lineText.includes('//')) continue;
+  add('W006', 'warn', lineOf(m.index),
+    `${m[1]} referenced — interaction-driven plugins do not fire in offline render`,
+    `Replace with a GSAP timeline driven by the mvm clock: use __mvmGsap.timeline({at: <seconds>}) or data-gsap-from/to. See SKILL.md → "GSAP integration".`);
+}
+
+// ---------------- Rule W007: GSAP autoplay outside the bridge -------
+// gsap.to/from inside a setTimeout / setInterval / requestAnimationFrame
+// bypasses the determinism layer because those callbacks run on
+// wall-clock time, not on mvm-seek.  We don't ban gsap.to() outright
+// (the bridge handles plain calls correctly via gsap.updateRoot), but
+// we do warn when the call is wrapped in a wall-clock timer.
+while ((m = scriptRe.exec(src)) !== null) {
+  const code = m[1];
+  if (/\b(setTimeout|setInterval)\s*\([\s\S]{0,200}?gsap\.(to|from|fromTo|timeline)\b/.test(code)) {
+    add('W007', 'warn', lineOf(m.index),
+      'gsap.* call wrapped in setTimeout/setInterval — wall-clock timers break determinism',
+      `Build the timeline upfront and let gsap.updateRoot (driven by mvm-seek) seek into it. Use __mvmGsap.timeline({at: <seconds>}) or position the tween at an absolute time on gsap.globalTimeline.`);
+  }
+  if (/\bgsap\.utils\.random\s*\(/.test(code) && !/__mvm\.random|seed/.test(code)) {
+    add('W008', 'warn', lineOf(m.index),
+      'gsap.utils.random() uses Math.random under the hood — output will differ between renders',
+      `Wrap with __mvm.random("seed") or pass a deterministic value: gsap.to(".x", {x: __mvm.randomSample("k") * 200}).`);
+  }
+}
+// reset the script regex iteration state since we used it twice above
+scriptRe.lastIndex = 0;
+
+// ---------------- Rule E006: data-gsap-* without bridge -------------
+const usesGsapData =
+  /data-gsap-(from|to|target|duration|delay|ease|stagger|repeat|yoyo|split|x|y|mask|smartwrap)\b/.test(src) ||
+  /\bdata-(draw-svg|morph-to|motion-path|physics2d|scramble|flip-id)\b/.test(src);
+const loadsBridge = /gsap-bridge\.js/.test(src);
+const loadsGsapCore = /\bgsap\.min\.js\b|\bgsap\.js\b|gsap@/.test(src) || /window\.gsap\b/.test(src);
+if (usesGsapData && !loadsBridge) {
+  add('E006', 'error', 0,
+    'composition uses data-gsap-* / data-draw-svg / data-morph-to / data-motion-path / data-physics2d / data-scramble / data-flip-id but does NOT load runtime/gsap-bridge.js',
+    `Add  <script src="../../runtime/gsap-bridge.js"></script>  AFTER the gsap core + plugins. Without the bridge those attributes are silently inert.`);
+}
+if (usesGsapData && loadsBridge && !loadsGsapCore) {
+  add('E006', 'error', 0,
+    'gsap-bridge.js loaded but no gsap core script tag found',
+    `Add  <script src="../../runtime/gsap/gsap.min.js"></script>  BEFORE the bridge. The bridge only registers plugins that exist on window.`);
+}
 
 // ---------------- Report --------------------------------------------
 if (asJson) {

@@ -16,12 +16,23 @@ description: >-
   .text-scrim and data-scrim runtime backdrop), 12 open-source Chinese
   fonts (Noto Sans/Serif SC, LXGW WenKai, ZCOOL series, Ma Shan Zheng,
   Long Cang, Liu Jian Mao Cao), and a puppeteer-driven frame-accurate
-  renderer.  Use when the user asks to make an animated landing page,
-  motion-graphics intro, kinetic typography, data-stat reveal,
-  Chinese-text animation, or HTML-to-video pipeline; or mentions
-  Remotion, Hyperframes, React-Bits, motion graphics, animated
-  typography, shader background, electric border, image trail,
-  meta balls, mask reveal, wave text, or "make a video".
+  renderer.  Now also bundles the full GSAP animation engine (gsap 3.15)
+  with deterministic seek bridge — every plugin including SplitText,
+  DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin, Physics2DPlugin,
+  PhysicsPropsPlugin, Flip, ScrambleTextPlugin, TextPlugin, CustomEase,
+  CustomWiggle, CustomBounce, EasePack — driven by mvm-seek so two
+  renders are still byte-identical.  Authors can use declarative
+  data-gsap-from / data-gsap-to / data-draw-svg / data-morph-to /
+  data-motion-path / data-physics2d / data-scramble / data-gsap-split
+  attributes, OR build full programmatic GSAP timelines via
+  __mvmGsap.timeline({at: <seconds>}).  Use when the user asks to make
+  an animated landing page, motion-graphics intro, kinetic typography,
+  data-stat reveal, Chinese-text animation, SVG logo draw, shape morph,
+  rocket flying along a curve, confetti burst, decrypting text, or
+  HTML-to-video pipeline; or mentions Remotion, Hyperframes, React-Bits,
+  GSAP, GreenSock, motion graphics, animated typography, shader
+  background, electric border, image trail, meta balls, mask reveal,
+  wave text, "make a video", or names any of the GSAP plugins above.
 ---
 
 # motion-video-maker
@@ -47,6 +58,10 @@ These prevent the bugs we keep seeing in agent-generated videos.
 | inline `<style>` with `transition:` / `@keyframes` | use `data-animation` + the runtime — CSS transitions don't seek and break determinism |
 | fade non-final scenes to opacity 0 | only the **last** scene may fade to black; everything else must hand off via a transition |
 | `background-image: url(...)` (CSS bg image, browser doesn't fire load event) | use `<img class="bg-img" style="position:absolute;inset:0;">` |
+| `gsap.utils.random(...)` / `Math.random()` inside any `gsap.to/from/timeline` value | wrap with `__mvm.random("seed")` or pass a deterministic precomputed value — see [GSAP integration](#gsap-integration--every-plugin-deterministic-bridged) |
+| `setTimeout(() => gsap.to(...), 1000)` / wall-clock-driven GSAP construction | build the timeline at parse-time, anchor it with `__mvmGsap.timeline({at: <s>})` so `mvm-seek` drives it |
+| Importing / referencing `ScrollTrigger` / `ScrollSmoother` / `Draggable` / `Observer` / `InertiaPlugin` | these need user interaction that doesn't exist in offline render — use a GSAP timeline driven by `mvm-seek` instead |
+| Loading `gsap-bridge.js` BEFORE `gsap.min.js` and the plugin scripts | always load gsap core + plugins FIRST, then the bridge — the bridge only registers what already exists on `window` |
 
 Run `node scripts/lint.mjs path/to/index.html` before rendering. Add
 `--strict` in CI so warnings also fail.
@@ -258,16 +273,24 @@ the other style on 1 scene as contrast**. Pure-blend rarely reads.
 ```
 motion-video-maker/
 ├── runtime/        # timeline.js, components.js, spring.js, shaders.js,
-│                   # transitions.js, effects.js, styles.css
+│   │               # transitions.js, effects.js, styles.css,
+│   │               # contrast-check.js, layout-check.js,
+│   │               # gsap-bridge.js   (← determinism bridge for GSAP)
+│   └── gsap/       # gsap.min.js + every plugin we ship: CustomEase,
+│                   # CustomWiggle, CustomBounce, EasePack,
+│                   # DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin,
+│                   # Physics2DPlugin, PhysicsPropsPlugin, Flip,
+│                   # SplitText, ScrambleTextPlugin, TextPlugin
 ├── assets/fonts/   # 12 open-source Chinese fonts (auto-installed)
 ├── scripts/        # render.mjs, preview.mjs, install-fonts.mjs,
-│                   # new-video.mjs, debug.mjs, snap.mjs
+│                   # new-video.mjs, debug.mjs, snap.mjs, lint.mjs
 ├── templates/      # base.html, diagnostic.html, showcase.html,
 │                   # effects-showcase.html (signature effects sampler)
 ├── examples/       # time-flies/ (30s reference)
 │                   # raycast-deep-dive/    (40s v1: canvas only)
 │                   # raycast-deep-dive-v2/ (40s v2: + spring + shaders + transitions)
 │                   # raycast-deep-dive-v3/ (40s v3: + electric-border / image-trail / odometer)
+│                   # gsap-showcase/        (42s GSAP plugin sampler — every plugin in one file)
 └── reference/      # components.md, workflow.md
 ```
 
@@ -363,6 +386,20 @@ commit to a style. Variety is the goal.
 <script src="../../runtime/shaders.js"></script>      <!-- WebGL shader bg  -->
 <script src="../../runtime/transitions.js"></script>  <!-- scene transitions -->
 <script src="../../runtime/effects.js"></script>      <!-- electric / star / image-trail -->
+
+<!-- GSAP — load any plugins you'll use BEFORE the bridge.
+     The bridge tolerates missing plugins; drop ones you don't need. -->
+<script src="../../runtime/gsap/gsap.min.js"></script>
+<script src="../../runtime/gsap/CustomEase.min.js"></script>
+<script src="../../runtime/gsap/EasePack.min.js"></script>
+<script src="../../runtime/gsap/SplitText.min.js"></script>
+<script src="../../runtime/gsap/DrawSVGPlugin.min.js"></script>
+<script src="../../runtime/gsap/MorphSVGPlugin.min.js"></script>
+<script src="../../runtime/gsap/MotionPathPlugin.min.js"></script>
+<script src="../../runtime/gsap/Physics2DPlugin.min.js"></script>
+<script src="../../runtime/gsap/Flip.min.js"></script>
+<script src="../../runtime/gsap/ScrambleTextPlugin.min.js"></script>
+<script src="../../runtime/gsap-bridge.js"></script>   <!-- MUST come AFTER gsap -->
 ```
 
 ## Quick Start
@@ -567,6 +604,330 @@ Inspired by react-bits' ElectricBorder / StarBorder / ImageTrail.
     data-animation="fadeInLeft" data-in-duration="0.9"
     data-easing="springSmooth">FLOW</h1>
 ```
+
+## GSAP integration — every plugin, deterministic, bridged
+
+The runtime now bundles **GSAP 3.15** plus every plugin Webflow makes free
+(see lineage). All of them animate on the same `mvm-seek` clock as
+the native runtime — two renders are still byte-identical.
+
+### What you get
+
+| Capability | Plugin | data-* attribute | Programmatic |
+|---|---|---|---|
+| Tween any CSS / transform property with arbitrary ease | core | `data-gsap-from` / `data-gsap-to` | `__mvmGsap.timeline({at}).to(...)` |
+| Per-line / -word / -char text reveals with masks | SplitText | `data-gsap-split="lines,words,chars"` | `SplitText.create(...)` then tween |
+| Stroke draw on an SVG path | DrawSVGPlugin | `data-draw-svg="0% 100%"` | `gsap.fromTo(path, {drawSVG:'0 0'}, {drawSVG:'100%'})` |
+| Morph one SVG path into another | MorphSVGPlugin | `data-morph-to="#otherPath"` | `gsap.to(p, {morphSVG:'#x'})` |
+| Animate any element along an SVG path | MotionPathPlugin | `data-motion-path="#pathId"` | `gsap.to(el, {motionPath:{path}})` |
+| Velocity / angle / gravity physics | Physics2DPlugin | `data-physics2d='{"velocity":300,"angle":-80,"gravity":600}'` | `gsap.to(el, {physics2D: {...}})` |
+| Per-property velocity / acceleration | PhysicsPropsPlugin | (programmatic only) | `gsap.to(el, {physicsProps: {x:{velocity}}})` |
+| FLIP layout transitions between scenes | Flip | `class="mvm-flip" data-flip-id="x" data-flip-at="3.0"` | `Flip.getState() / Flip.from()` |
+| Decoder scramble | ScrambleTextPlugin | `data-scramble='{"text":"DONE"}'` | `gsap.to(el, {scrambleText: {...}})` |
+| Type / replace text content over time | TextPlugin | (programmatic only) | `gsap.to(el, {text: "new"})` |
+| Custom cubic / SVG easing curves | CustomEase | `data-easing="mvm.<name>"` | `__mvmGsap.registerCustomEase(name, def)` |
+| Wiggle / oscillating ease | CustomWiggle | `data-easing="mywiggle"` | `CustomWiggle.create("mywiggle", {...})` |
+| Real bounce ease | CustomBounce | `data-easing="mybounce"` | `CustomBounce.create("mybounce", {...})` |
+| SlowMo / RoughEase / ExpoScaleEase | EasePack | `data-easing="slow(0.7,0.7)"` etc. | string in any tween's `ease` |
+
+**Deliberately omitted** (because they need user interaction that
+doesn't exist in offline render):
+
+- `ScrollTrigger` / `ScrollSmoother` — there is no scroll
+- `Draggable` / `Observer` / `InertiaPlugin` — there is no pointer
+
+If you reference these, `scripts/lint.mjs` raises `W006`. Replace
+them with a timeline that you anchor onto `gsap.globalTimeline` —
+the bridge will seek into it on every `mvm-seek`.
+
+### How the bridge works (the determinism contract)
+
+1. The bridge calls `gsap.ticker.lagSmoothing(0)` and removes
+   `gsap.updateRoot` from `gsap.ticker` so GSAP's RAF clock never
+   advances anything on its own in render mode.
+2. On every `mvm-seek` event the bridge calls
+   `gsap.updateRoot(seekTime)` — the official "drive me from a
+   custom clock" API. Every tween, child timeline, and plugin
+   advances to that exact absolute second. ([gsap.com/docs](https://gsap.com/docs/v3/GSAP/gsap.updateRoot()))
+3. The bridge proxies `window.__mvm.easing` so any GSAP ease string
+   (e.g. `"power2.inOut"`, `"back.out(1.7)"`, `"elastic.out(1, 0.3)"`)
+   silently resolves through `gsap.parseEase(...)` and is then
+   available to the *native* `data-animation` system too. So you
+   can write `data-animation="fadeInUp" data-easing="back.out(1.6)"`
+   and the runtime now understands it.
+4. Anything you author with `data-gsap-from` / `data-gsap-to` / etc.
+   becomes a `gsap.fromTo(...)` tween anchored at the host element's
+   `data-start + data-gsap-delay`. The clip's lifecycle still owns
+   visibility — GSAP only handles the tween itself.
+
+> **Author hard-rules:**
+> - Don't wrap `gsap.to()` / `gsap.from()` in `setTimeout` /
+>   `setInterval` / `requestAnimationFrame`. Wall-clock timers
+>   bypass `gsap.updateRoot` and produce different output every
+>   render. `lint.mjs W007` flags this.
+> - Don't call `gsap.utils.random()` — it uses `Math.random` under
+>   the hood. Wrap with `__mvm.random("seed")` or pass a
+>   pre-computed deterministic value. `lint.mjs W008` flags this.
+> - Build the timeline at parse-time; don't try to construct new
+>   tweens inside an `mvm-seek` handler (that fires every frame
+>   and would create thousands of tweens).
+
+### Declarative recipes — copy these
+
+#### 1) Drop-in tween (works on any element with `data-clip`)
+
+```html
+<h1 class="title text-readable"
+    data-clip data-start="2.0" data-duration="6"
+    data-gsap-from='{"y":120,"opacity":0,"rotationX":-30}'
+    data-gsap-to='{"y":0,"opacity":1,"rotationX":0}'
+    data-gsap-duration="1.0"
+    data-gsap-ease="back.out(1.4)">Hello GSAP</h1>
+```
+
+#### 2) Pro SplitText (line / word / char reveal with mask)
+
+```html
+<h1 class="title"
+    data-clip data-start="0.6" data-duration="5"
+    data-gsap-split="lines,words,chars"
+    data-gsap-mask="lines"
+    data-gsap-stagger="0.05" data-gsap-duration="0.9"
+    data-gsap-y="120" data-gsap-ease="power3.out">动画引擎</h1>
+```
+
+`data-gsap-mask="lines"` clips each line to its own bounding box —
+characters that translate up appear "lifted" out of an invisible
+slot. Combine with a serif font for an editorial feel.
+
+#### 3) DrawSVG — animate a stroke
+
+```html
+<svg class="logo" viewBox="0 0 1100 520">
+  <path d="M 80 440 L 80 100 L 240 360 L 400 100 L 400 440"
+        fill="none" stroke="#FFD400" stroke-width="4"
+        data-clip data-start="6.4" data-duration="5"
+        data-draw-svg="0% 100%"
+        data-gsap-duration="1.6"
+        data-gsap-ease="power2.inOut" />
+</svg>
+```
+
+The path MUST have a visible `stroke` (CSS or attribute). Multiple
+paths can share `data-clip data-start` to draw simultaneously, or
+stagger them by 0.2-0.5s for a "logotype building itself" effect.
+
+#### 4) MorphSVG — square → triangle → star
+
+Hide the target shapes (so they don't render their own strokes/fill),
+keep the visible morphing path, and animate it through targets:
+
+```html
+<svg viewBox="0 0 540 540">
+  <!-- targets are visibility:hidden so only their `d` matters -->
+  <path id="shape-triangle" style="visibility:hidden"
+        d="M 270 60 L 480 470 L 60 470 Z" />
+  <path id="shape-star" style="visibility:hidden"
+        d="M 270 60 L 320 220 L 480 220 L 350 320 L 400 480
+           L 270 380 L 140 480 L 190 320 L 60 220 L 220 220 Z" />
+
+  <!-- The visible path morphs through them. First hop is declarative,
+       further hops are sequenced on a real GSAP timeline. -->
+  <path id="morph"
+        d="M 80 80 L 460 80 L 460 460 L 80 460 Z"
+        fill="none" stroke="#5BC0EB" stroke-width="6"
+        data-clip data-start="12.4" data-duration="5"
+        data-morph-to="#shape-triangle"
+        data-gsap-duration="1.0" />
+</svg>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tl = window.__mvmGsap.timeline({ at: 13.6 });
+    tl.to('#morph', { morphSVG: '#shape-star',   duration: 1, ease: 'power2.inOut' })
+      .to('#morph', { morphSVG: '#shape-circle', duration: 1, ease: 'power2.inOut' }, '+=0.4');
+  });
+</script>
+```
+
+#### 5) MotionPath — anything along an SVG path
+
+```html
+<svg class="track" viewBox="0 0 1280 540" style="position:absolute;top:50%;left:50%;
+     transform:translate(-50%,-50%); width:1280px; height:540px;">
+  <path id="rocket-path" d="M 60 480 C 260 480 360 60 640 270
+                            C 920 480 1020 60 1220 60"
+        fill="none" stroke="#FFD400" stroke-width="2"
+        stroke-dasharray="4 6" />
+</svg>
+
+<div style="position:absolute; left:0; top:0; font-size:84px;"
+     data-clip data-start="18.6" data-duration="5"
+     data-motion-path="#rocket-path"
+     data-motion-path-rotate="true"
+     data-gsap-duration="4.6"
+     data-gsap-ease="power1.inOut">🚀</div>
+```
+
+`data-motion-path-rotate="true"` rotates the host to follow the
+tangent of the curve (great for arrows, comets, planes).
+
+#### 6) Physics2D confetti — programmatic, deterministic
+
+```html
+<div id="conf-host" style="position:absolute; left:960px; top:540px;"></div>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const host = document.getElementById('conf-host');
+    const palette = ['#FF6363', '#FFD400', '#5BC0EB', '#9d8df1', '#2af598'];
+    const rng = window.__mvm.random('confetti'); // deterministic PRNG
+    const tl = window.__mvmGsap.timeline({ at: 24.6 }); // anchor at 24.6s
+    for (let i = 0; i < 60; i++) {
+      const dot = document.createElement('div');
+      Object.assign(dot.style, {
+        position:'absolute', left:'0', top:'0',
+        width:'22px', height:'22px', borderRadius:'4px',
+        background: palette[Math.floor(rng() * palette.length)],
+      });
+      host.appendChild(dot);
+      const angle    = -90 + (rng() * 160 - 80);
+      const velocity = 700 + rng() * 700;
+      const gravity  = 1400 + rng() * 400;
+      const dur      = 2.4 + rng() * 0.9;
+      tl.to(dot, { physics2D: { velocity, angle, gravity },
+                   rotation: (rng() - 0.5) * 1080,
+                   duration: dur, ease: 'none' }, 0);
+      tl.to(dot, { opacity: 0, duration: 0.6, ease: 'power2.in' }, dur - 0.6);
+    }
+  });
+</script>
+```
+
+Use `__mvm.random("seed")` for the RNG so the burst pattern is
+identical between renders. Lint rule `W008` enforces this.
+
+#### 7) ScrambleText — decoder reveal
+
+```html
+<p class="text-readable"
+   data-clip data-start="30.6" data-duration="5"
+   data-scramble='{"text":"DECRYPTING ACCESS","chars":"upperAndLowerCase"}'
+   data-gsap-duration="2.0">▓▓▓▓▓▓▓▓ ▓▓▓▓▓▓▓▓</p>
+
+<!-- with custom CJK character pool -->
+<p data-clip data-start="32" data-duration="3"
+   data-scramble='{"text":"动画即数据","chars":"龙腾虎跃春夏秋冬天地"}'
+   data-gsap-duration="1.4">?????</p>
+```
+
+`chars` accepts:
+- `"upperAndLowerCase"` / `"upperCase"` / `"lowerCase"` — Latin
+- `"01"` — binary
+- any string of glyphs to cycle through (works perfectly with CJK)
+
+#### 8) Programmatic timeline — full GSAP sequencing
+
+When you want to choreograph 10+ elements in one scene:
+
+```html
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const cells = document.querySelectorAll('.grid-cell');
+    // Custom ease registered via the bridge
+    window.__mvmGsap.registerCustomEase(
+      'mvm.swoop',
+      'M0,0 C0.2,0.0 0.0,0.6 0.4,0.85 0.7,1.05 0.8,0.98 1,1'
+    );
+    const tl = window.__mvmGsap.timeline({ at: 36.4 });
+    tl.from(cells, {
+        y: 240, opacity: 0, scale: 0.4, rotation: -12,
+        stagger: { each: 0.06, from: 'center' },
+        duration: 0.9, ease: 'mvm.swoop',
+      }, 0)
+      .to(cells, {
+        scale: 1.08, duration: 0.4, ease: 'sine.inOut',
+        stagger: { each: 0.04, from: 'edges' },
+        yoyo: true, repeat: 1,
+      }, 1.4)
+      .to(cells, {
+        rotationY: 360, duration: 1.2, ease: 'power2.inOut',
+        stagger: { each: 0.08, from: 'start', grid: [2, 4], axis: 'x' },
+      }, 2.6);
+  });
+</script>
+```
+
+`__mvmGsap.timeline({at: 36.4})` returns a real `gsap.timeline()`
+that has been added to `gsap.globalTimeline` at absolute time
+`36.4s`. Internal positioning (`0`, `1.4`, `'+=0.2'`, `'<'`, …)
+follows GSAP's [position parameter](https://gsap.com/docs/v3/GSAP/Timeline)
+verbatim.
+
+### CustomEase / CustomWiggle / CustomBounce / EasePack
+
+These plug straight into the runtime's existing easing table. Once
+the bridge mounts, `data-easing="<gsap-ease-name>"` works on any
+mvm-native preset:
+
+```html
+<!-- power easings (the most useful for video pacing) -->
+<h1 data-animation="fadeInUp" data-easing="power3.out">…</h1>
+<h2 data-animation="slideBlurIn" data-easing="expo.inOut">…</h2>
+
+<!-- back / elastic / bounce -->
+<p  data-animation="pop" data-easing="back.out(1.7)">…</p>
+<p  data-animation="dropIn" data-easing="elastic.out(1, 0.3)">…</p>
+
+<!-- EasePack -->
+<p  data-animation="fadeIn" data-easing="slow(0.7, 0.7, false)">…</p>
+<p  data-animation="zoomIn" data-easing="rough({clamp:true,points:20})">…</p>
+
+<!-- Author-defined CustomEase -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    window.__mvmGsap.registerCustomEase('mvm.swoop',
+      'M0,0 C0.2,0.0 0.0,0.6 0.4,0.85 0.7,1.05 0.8,0.98 1,1');
+  });
+</script>
+<h1 data-animation="fadeInUp" data-easing="mvm.swoop">…</h1>
+
+<!-- CustomWiggle / CustomBounce -->
+<script>
+  CustomWiggle.create('myWiggle', { wiggles: 6, type: 'random' });
+  CustomBounce.create('myBounce', { strength: 0.7, squash: 3 });
+</script>
+<div data-gsap-from='{"rotation":-30}' data-gsap-to='{"rotation":30}'
+     data-gsap-duration="1.5" data-gsap-ease="myWiggle">…</div>
+```
+
+### When to use mvm-native vs GSAP
+
+| Goal | Use |
+|---|---|
+| Quick entrance from the 24-preset table (`fadeInUp`, `unmaskUp`, `magneticIn`, …) | mvm `data-animation=` |
+| Per-character text animation that doesn't need lines or masks | mvm `data-text-animation="split-text"` |
+| Stagger over arbitrary properties / arbitrary easing | GSAP `data-gsap-from` / `data-gsap-to` |
+| Line-aware split, mask reveal, autoSplit on font-load | GSAP `data-gsap-split` |
+| Stroke draw, shape morph, motion path | GSAP plugins (DrawSVG / MorphSVG / MotionPath) |
+| Particle bursts with physics | GSAP `Physics2DPlugin` |
+| Choreographing 5+ elements with overlapping time positions | `__mvmGsap.timeline({at})` |
+| Layout transitions between scenes (FLIP) | GSAP `Flip` |
+| Custom mathematical ease curve (cubic-bezier or SVG path) | GSAP `CustomEase` (use anywhere) |
+
+The two systems compose freely — use whichever reads best for the
+scene. Existing examples (`time-flies`, `raycast-deep-dive-v*`)
+still use the mvm-native attributes; new compositions are
+encouraged to mix the two for richer motion.
+
+### Where to look
+
+- **`runtime/gsap-bridge.js`** — the determinism layer. Read this
+  to understand exactly how `mvm-seek` drives every GSAP tween.
+- **`runtime/gsap/`** — bundled GSAP 3.15 + every plugin (UMD).
+- **`examples/gsap-showcase/index.html`** — 7-scene 42s reference
+  exercising each plugin (SplitText / DrawSVG / MorphSVG /
+  MotionPath / Physics2D / ScrambleText / programmatic timeline +
+  CustomEase). Render with `npm run render:gsap`.
 
 ## Typography limits — never write `font-size: 180px` for a long title
 
@@ -1079,7 +1440,8 @@ If something doesn't appear:
 | **react-bits** | Component taxonomy (text / animations / backgrounds / decorations); naming (`split-text`, `blur-text`, `decrypted-text`, `iridescence`, `liquid-ether`, `prismatic-burst`, `lightning`, `plasma`, `beams`, `meta-balls`, `pixel-dissolve`, `electric-border`, `star-border`, `image-trail`, `magnet-lines`, `ribbons`, `odometer`); the "shader background" idea (we wrote our own GLSL from scratch instead of porting OGL). |
 | **motion.dev / framer-motion** | Closed-form spring physics math (damped harmonic oscillator) for `springGentle/Soft/Snap/Smooth/Bouncy/Wobbly/Stiff`. |
 | **hyperframes** | HTML-native composition; `data-*` attribute API; single `index.html` per video; puppeteer-screenshot frame capture. |
-| **remotion** | Frame-accurate deterministic seek; image2pipe → ffmpeg encoder; chrome launch flags. |
+| **remotion** | Frame-accurate deterministic seek; image2pipe → ffmpeg encoder; chrome launch flags; `delayRender` / `continueRender` / `cancelRender` API. |
+| **GSAP** ([greensock/gsap-skills](https://github.com/greensock/gsap-skills)) | The full animation engine — core tweens, timelines, easing, plus every plugin (SplitText, DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin, Physics2DPlugin, PhysicsPropsPlugin, Flip, ScrambleTextPlugin, TextPlugin, CustomEase, CustomWiggle, CustomBounce, EasePack). All free and bundled in `runtime/gsap/`; integrated through `runtime/gsap-bridge.js` which routes `gsap.updateRoot` through `mvm-seek` for byte-identical determinism. |
 
 The shader backgrounds (`liquid-ether`, `iridescence`, `meta-balls`, etc.)
 are NOT ports of react-bits' OGL implementations — they are hand-written
@@ -1097,6 +1459,7 @@ the runtime stays zero-dependency.
 - **[examples/raycast-deep-dive-v2/index.html](examples/raycast-deep-dive-v2/index.html)** — 40s deep-dive showing spring + shader + transition together.
 - **[examples/raycast-deep-dive-v3/index.html](examples/raycast-deep-dive-v3/index.html)** — 40s v3 with electric-border on Hybrid card + magnet-lines architecture + image-trail rows + odometer memory counters.
 - **[examples/raycast-deep-dive-v4/index.html](examples/raycast-deep-dive-v4/index.html)** — 40s v4: text-readability pass (`.scene-scrim` on every scene, gradient-on-3D-transform fixes), `data-hide-mode="visibility"` default that eliminates layout jitter, Scene-2 layout overhauled to centered flex (no more right-edge overflow on "macOS + Windows" tag), and 12+ different animation presets across 7 scenes.
+- **[examples/gsap-showcase/index.html](examples/gsap-showcase/index.html)** — 42s GSAP plugin sampler: SplitText (line-mask + char stagger, Scene 1) → DrawSVG (4-stroke "MVM" wordmark, Scene 2) → MorphSVG (square→triangle→star→circle→square, Scene 3) → MotionPath (rocket on a curved path, Scene 4) → Physics2D (60-piece confetti burst, Scene 5) → ScrambleText (Latin + CJK pools, Scene 6) → programmatic GSAP timeline + CustomEase + 4-axis grid stagger (Scene 7). Render with `npm run render:gsap`.
 - **[examples/time-flies-v2/index.html](examples/time-flies-v2/index.html)** — 42s reflective piece on time. Showcases the elegant serif default (思源宋体 Black for 「时间飞逝」/「活在当下」titles, 霞鹜文楷 for poetic quotes), 7 different shader backgrounds, 6 inter-scene transitions, 12+ entrance animations, and the full odometer chain (463 → 70 → 3,600 → 86,400 → 525,600). See `contact-sheet.jpg`.
 - **[examples/optimization-v5-summary.jpg](examples/optimization-v5-summary.jpg)** — 6-frame proof that both v5 fixes landed: typography upgrade + Scene 2 overflow fix.
 - **[templates/showcase.html](templates/showcase.html)** — 6-cell grid that renders every shader at once.

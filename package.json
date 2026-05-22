@@ -8,7 +8,8 @@
     "new": "node scripts/new-video.mjs",
     "preview": "node scripts/preview.mjs",
     "render": "node scripts/render.mjs",
-    "render:time-flies": "node scripts/render.mjs examples/time-flies/index.html examples/time-flies/output.mp4 fps=30 crf=18 preset=medium"
+    "render:time-flies": "node scripts/render.mjs examples/time-flies/index.html examples/time-flies/output.mp4 fps=30 crf=18 preset=medium",
+    "render:gsap": "node scripts/render.mjs examples/gsap-showcase/index.html examples/gsap-showcase/output.mp4 fps=30 crf=18 preset=medium"
   },
   "keywords": [
     "video",
@@ -22,6 +23,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "gsap": "^3.15.0",
     "puppeteer": "^25.0.2"
   }
 }

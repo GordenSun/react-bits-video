@@ -96,6 +96,24 @@ const html = `<!DOCTYPE html>
   <script src="../../runtime/shaders.js"></script>
   <script src="../../runtime/transitions.js"></script>
   <script src="../../runtime/effects.js"></script>
+
+  <!-- GSAP (optional but recommended). Drop any plugin you don't need. -->
+  <script src="../../runtime/gsap/gsap.min.js"></script>
+  <script src="../../runtime/gsap/CustomEase.min.js"></script>
+  <script src="../../runtime/gsap/CustomWiggle.min.js"></script>
+  <script src="../../runtime/gsap/CustomBounce.min.js"></script>
+  <script src="../../runtime/gsap/EasePack.min.js"></script>
+  <script src="../../runtime/gsap/DrawSVGPlugin.min.js"></script>
+  <script src="../../runtime/gsap/MorphSVGPlugin.min.js"></script>
+  <script src="../../runtime/gsap/MotionPathPlugin.min.js"></script>
+  <script src="../../runtime/gsap/Physics2DPlugin.min.js"></script>
+  <script src="../../runtime/gsap/PhysicsPropsPlugin.min.js"></script>
+  <script src="../../runtime/gsap/Flip.min.js"></script>
+  <script src="../../runtime/gsap/SplitText.min.js"></script>
+  <script src="../../runtime/gsap/ScrambleTextPlugin.min.js"></script>
+  <script src="../../runtime/gsap/TextPlugin.min.js"></script>
+  <script src="../../runtime/gsap-bridge.js"></script>
+
   <script src="../../runtime/contrast-check.js"></script>
   <script src="../../runtime/layout-check.js"></script>
 </body>

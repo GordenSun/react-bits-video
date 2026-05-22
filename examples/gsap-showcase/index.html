@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>GSAP Showcase</title>
+  <link rel="stylesheet" href="../../runtime/styles.css" />
+  <link rel="stylesheet" href="../../assets/fonts/fonts.css" />
+  <style>
+    /* ---- Scene-shared helpers --------------------------------- */
+    .panel-title {
+      position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+      letter-spacing: 0.04em;
+    }
+    .panel-eyebrow {
+      position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+      font-family: 'JetBrains Mono', monospace; font-size: 22px;
+      letter-spacing: 0.32em; text-transform: uppercase;
+      color: #FFD400;
+    }
+    .center-stage {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ---- Scene 1: SplitText (GSAP) ---------------------------- */
+    .hero-line {
+      font-family: 'Noto Serif SC', serif; font-weight: 900;
+      font-size: 200px; line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+
+    /* ---- Scene 2: DrawSVG ------------------------------------- */
+    .draw-canvas { width: 1100px; height: 520px; }
+    .draw-canvas path {
+      fill: none; stroke: #FFD400; stroke-width: 4;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .draw-canvas .accent { stroke: #FF6363; stroke-width: 6; }
+    .draw-label {
+      position: absolute; bottom: 140px; left: 50%; transform: translateX(-50%);
+      font-family: 'Noto Serif SC', serif; font-size: 56px;
+      letter-spacing: 0.06em;
+    }
+
+    /* ---- Scene 3: MorphSVG ------------------------------------ */
+    .morph-stage svg { width: 540px; height: 540px; }
+    .morph-stage path {
+      fill: none; stroke: #5BC0EB; stroke-width: 6;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .morph-caption {
+      position: absolute; bottom: 200px; left: 50%; transform: translateX(-50%);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.3em; font-size: 24px;
+      color: #5BC0EB; text-transform: uppercase;
+    }
+
+    /* ---- Scene 4: MotionPath ---------------------------------- */
+    .mp-wrap { position: absolute; inset: 0; }
+    .mp-track { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 1280px; height: 540px; opacity: 0.4; }
+    .mp-track path { fill: none; stroke: #FFD400; stroke-width: 2; stroke-dasharray: 4 6; }
+    .mp-rocket {
+      position: absolute; left: 0; top: 0;
+      font-size: 84px;
+      filter: drop-shadow(0 12px 24px rgba(0,0,0,0.6));
+    }
+
+    /* ---- Scene 5: Physics2D ----------------------------------- */
+    .conf-spawn { position: absolute; left: 960px; top: 540px; }
+    .conf {
+      position: absolute; left: 0; top: 0;
+      width: 22px; height: 22px;
+      border-radius: 4px;
+      transform-origin: center;
+    }
+
+    /* ---- Scene 6: Scramble ------------------------------------ */
+    .scramble-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 84px;
+      letter-spacing: 0.06em;
+      color: #FF6363;
+    }
+
+    /* ---- Scene 7: Choreographed timeline ---------------------- */
+    .grid-cell {
+      width: 220px; height: 220px;
+      border-radius: 22px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Sans SC', sans-serif; font-weight: 900;
+      font-size: 56px;
+      box-shadow: 0 18px 60px rgba(0,0,0,0.5);
+    }
+    .gc-grid {
+      position: absolute; inset: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 220px);
+      grid-template-rows: repeat(2, 220px);
+      gap: 36px;
+      align-content: center; justify-content: center;
+    }
+  </style>
+</head>
+<body class="mvm-preview">
+  <div id="stage"
+       data-composition-id="gsap-showcase"
+       data-width="1920" data-height="1080"
+       data-fps="30" data-duration="42">
+
+    <!-- ============================================================
+         BACKGROUNDS — one per scene, cross-faded with mvm transitions
+         ============================================================ -->
+    <div data-background="liquid-ether" data-palette="cool-deep"
+         data-clip data-start="0" data-duration="6.0"
+         data-animation="fadeIn" data-in-duration="0.5"></div>
+
+    <div data-background="iridescence" data-palette="prismatic-vapor"
+         data-clip data-start="6.0" data-duration="6.0"
+         data-animation="fadeIn" data-in-duration="0.4"></div>
+
+    <div data-background="meta-balls" data-palette="warm-glow"
+         data-clip data-start="12.0" data-duration="6.0"
+         data-animation="fadeIn" data-in-duration="0.4"></div>
+
+    <div data-background="plasma" data-palette="cool-violet"
+         data-clip data-start="18.0" data-duration="6.0"
+         data-animation="fadeIn" data-in-duration="0.4"></div>
+
+    <div data-background="prismatic-burst" data-palette="prismatic-magic"
+         data-clip data-start="24.0" data-duration="6.0"
+         data-animation="fadeIn" data-in-duration="0.4"></div>
+
+    <div data-background="lightning" data-palette="cool-neon"
+         data-clip data-start="30.0" data-duration="6.0"
+         data-animation="fadeIn" data-in-duration="0.4"></div>
+
+    <div data-background="beams" data-palette="warm-sunset"
+         data-clip data-start="36.0" data-duration="6.0"
+         data-animation="fadeIn" data-in-duration="0.4"></div>
+
+    <!-- Inter-scene transitions -->
+    <div data-transition="iris" data-start="5.6" data-duration="0.7" data-color="#06061a"></div>
+    <div data-transition="pixel-dissolve" data-start="11.6" data-duration="0.7" data-color="#1a0b30"></div>
+    <div data-transition="flash" data-start="17.6" data-duration="0.5" data-color="#FFD400"></div>
+    <div data-transition="wipe-right" data-start="23.6" data-duration="0.7"></div>
+    <div data-transition="glitch" data-start="29.6" data-duration="0.7"></div>
+    <div data-transition="iris" data-start="35.6" data-duration="0.7" data-color="#06061a"></div>
+
+    <!-- ============================================================
+         SCENE 1 (0-6s) — GSAP SplitText with line-mask reveal
+         ============================================================ -->
+    <div class="scene scene-scrim" data-clip data-hide-mode="visibility"
+         data-start="0" data-duration="6"
+         style="position:absolute; inset:0; z-index:10;">
+
+      <span class="panel-eyebrow"
+            data-clip data-start="0.2" data-duration="5.2"
+            data-animation="fadeInDown" data-in-duration="0.6"
+            style="color:#FFD400;">GSAP × MOTION-VIDEO-MAKER</span>
+
+      <div class="center-stage">
+        <div style="text-align:center;">
+          <div class="hero-line text-readable"
+               data-clip data-start="0.6" data-duration="5"
+               data-gsap-split="lines,words,chars"
+               data-gsap-mask="lines"
+               data-gsap-stagger="0.05"
+               data-gsap-duration="0.9"
+               data-gsap-ease="power3.out"
+               data-gsap-y="120"
+               style="color:#fff;">动画引擎</div>
+          <div class="hero-line"
+               data-clip data-start="1.4" data-duration="4.2"
+               data-gsap-split="chars"
+               data-gsap-stagger="0.03"
+               data-gsap-duration="0.7"
+               data-gsap-ease="back.out(1.6)"
+               data-gsap-y="80"
+               style="color:#FFD400; font-size:140px; margin-top:20px;">SplitText · 行/词/字符遮罩</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SCENE 2 (6-12s) — DrawSVGPlugin: stroke draw on a logo path
+         ============================================================ -->
+    <div class="scene scene-scrim" data-clip data-hide-mode="visibility"
+         data-start="6" data-duration="6"
+         style="position:absolute; inset:0; z-index:10;">
+
+      <span class="panel-eyebrow"
+            data-clip data-start="6.2" data-duration="5.2"
+            data-animation="fadeInDown">DRAW SVG · 笔触动画</span>
+
+      <div class="center-stage">
+        <svg class="draw-canvas" viewBox="0 0 1100 520"
+             xmlns="http://www.w3.org/2000/svg">
+          <!-- Big "M" stroke -->
+          <path id="logo-m"
+                d="M 80 440 L 80 100 L 240 360 L 400 100 L 400 440"
+                data-clip data-start="6.4" data-duration="5.2"
+                data-draw-svg="0% 100%"
+                data-gsap-duration="1.6"
+                data-gsap-ease="power2.inOut" />
+          <!-- "V" -->
+          <path id="logo-v"
+                d="M 460 100 L 580 440 L 700 100"
+                data-clip data-start="6.9" data-duration="4.7"
+                data-draw-svg="0% 100%"
+                data-gsap-duration="1.4"
+                data-gsap-ease="power2.inOut" />
+          <!-- "M2" -->
+          <path id="logo-m2"
+                d="M 760 440 L 760 100 L 880 360 L 1000 100 L 1000 440"
+                data-clip data-start="7.4" data-duration="4.2"
+                data-draw-svg="0% 100%"
+                data-gsap-duration="1.6"
+                data-gsap-ease="power2.inOut" />
+          <!-- Underline accent -->
+          <path id="logo-underline" class="accent"
+                d="M 60 470 L 1020 470"
+                data-clip data-start="9.0" data-duration="2.6"
+                data-draw-svg="0% 100%"
+                data-gsap-duration="0.8"
+                data-gsap-ease="power3.out" />
+        </svg>
+      </div>
+
+      <h2 class="draw-label text-readable"
+          data-clip data-start="9.4" data-duration="2.2"
+          data-gsap-from='{"opacity":0,"y":40}'
+          data-gsap-to='{"opacity":1,"y":0}'
+          data-gsap-duration="0.6"
+          data-gsap-ease="power2.out"
+          style="color:#fff; opacity:0;">绘制路径 · DrawSVGPlugin</h2>
+    </div>
+
+    <!-- ============================================================
+         SCENE 3 (12-18s) — MorphSVGPlugin: shape-to-shape morph
+         ============================================================ -->
+    <div class="scene scene-scrim" data-clip data-hide-mode="visibility"
+         data-start="12" data-duration="6"
+         style="position:absolute; inset:0; z-index:10;">
+
+      <span class="panel-eyebrow"
+            data-clip data-start="12.2" data-duration="5.2"
+            data-animation="fadeInDown">MORPH SVG · 形状互变</span>
+
+      <div class="center-stage morph-stage">
+        <svg viewBox="0 0 540 540" xmlns="http://www.w3.org/2000/svg">
+          <!-- Hidden target shapes -->
+          <path id="shape-square" style="visibility:hidden;"
+                d="M 80 80 L 460 80 L 460 460 L 80 460 Z" />
+          <path id="shape-triangle" style="visibility:hidden;"
+                d="M 270 60 L 480 470 L 60 470 Z" />
+          <path id="shape-star" style="visibility:hidden;"
+                d="M 270 60 L 320 220 L 480 220 L 350 320 L 400 480 L 270 380 L 140 480 L 190 320 L 60 220 L 220 220 Z" />
+          <path id="shape-circle" style="visibility:hidden;"
+                d="M 270 60 C 386 60 480 154 480 270 C 480 386 386 480 270 480 C 154 480 60 386 60 270 C 60 154 154 60 270 60 Z" />
+
+          <!-- Visible morph target — starts as square, morphs to triangle.
+               Additional morphs (triangle → star → circle) are sequenced
+               by the author <script> at the bottom of the file via a real
+               GSAP timeline anchored at gsap-time 13.5s. -->
+          <path id="morph-shape"
+                d="M 80 80 L 460 80 L 460 460 L 80 460 Z"
+                data-clip data-start="12.4" data-duration="5.2"
+                data-morph-to="#shape-triangle"
+                data-gsap-duration="1.0"
+                data-gsap-ease="power2.inOut" />
+        </svg>
+      </div>
+
+      <p class="morph-caption text-readable"
+         data-clip data-start="13.0" data-duration="4.2"
+         data-gsap-split="chars"
+         data-gsap-stagger="0.03"
+         data-gsap-duration="0.5"
+         data-gsap-ease="power2.out">SQUARE → TRIANGLE</p>
+    </div>
+
+    <!-- ============================================================
+         SCENE 4 (18-24s) — MotionPath: rocket flying along an arc
+         ============================================================ -->
+    <div class="scene scene-scrim" data-clip data-hide-mode="visibility"
+         data-start="18" data-duration="6"
+         style="position:absolute; inset:0; z-index:10;">
+
+      <span class="panel-eyebrow"
+            data-clip data-start="18.2" data-duration="5.2"
+            data-animation="fadeInDown">MOTION PATH · 沿路径运动</span>
+
+      <h1 class="text-readable"
+          data-clip data-start="18.5" data-duration="5.0"
+          data-gsap-split="chars"
+          data-gsap-stagger="0.05"
+          data-gsap-duration="0.7"
+          data-gsap-ease="power3.out"
+          data-gsap-y="60"
+          style="position:absolute; bottom:160px; left:50%; transform:translateX(-50%);
+                 font-family:'Noto Serif SC', serif; font-weight:900;
+                 font-size:120px; color:#fff;">沿轨迹飞行</h1>
+
+      <!-- The path -->
+      <svg class="mp-track" viewBox="0 0 1280 540" xmlns="http://www.w3.org/2000/svg"
+           preserveAspectRatio="none">
+        <path id="rocket-path"
+              d="M 60 480 C 260 480 360 60 640 270 C 920 480 1020 60 1220 60" />
+      </svg>
+
+      <!-- The thing that follows -->
+      <div class="mp-rocket"
+           data-clip data-start="18.6" data-duration="5.2"
+           data-motion-path="#rocket-path"
+           data-motion-path-align="true"
+           data-motion-path-rotate="true"
+           data-gsap-duration="4.6"
+           data-gsap-ease="power1.inOut"
+           data-gsap-from='{"opacity":0}'
+           data-gsap-to='{"opacity":1}'>🚀</div>
+    </div>
+
+    <!-- ============================================================
+         SCENE 5 (24-30s) — Physics2D: confetti burst
+         ============================================================ -->
+    <div class="scene scene-scrim" data-clip data-hide-mode="visibility"
+         data-start="24" data-duration="6"
+         style="position:absolute; inset:0; z-index:10;">
+
+      <span class="panel-eyebrow"
+            data-clip data-start="24.2" data-duration="5.2"
+            data-animation="fadeInDown">PHYSICS 2D · 物理动画</span>
+
+      <h1 class="text-readable"
+          data-clip data-start="24.4" data-duration="5.0"
+          data-gsap-split="chars"
+          data-gsap-stagger="0.04"
+          data-gsap-duration="0.6"
+          data-gsap-ease="back.out(1.4)"
+          data-gsap-y="80"
+          style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                 font-family:'Noto Serif SC', serif; font-weight:900;
+                 font-size:160px; color:#FFD400;">CELEBRATE!</h1>
+
+      <!-- Confetti spawn point — 60 deterministic particles -->
+      <div class="conf-spawn" id="conf-host"></div>
+    </div>
+
+    <!-- ============================================================
+         SCENE 6 (30-36s) — ScrambleText + CustomEase
+         ============================================================ -->
+    <div class="scene scene-scrim" data-clip data-hide-mode="visibility"
+         data-start="30" data-duration="6"
+         style="position:absolute; inset:0; z-index:10;">
+
+      <span class="panel-eyebrow"
+            data-clip data-start="30.2" data-duration="5.2"
+            data-animation="fadeInDown">SCRAMBLE TEXT · 解码动画</span>
+
+      <div class="center-stage" style="flex-direction:column; gap:60px;">
+        <p class="scramble-line text-readable"
+           data-clip data-start="30.6" data-duration="5"
+           data-scramble='{"text":"DECRYPTING ACCESS","chars":"upperAndLowerCase","speed":0.4}'
+           data-gsap-duration="2.0"
+           style="color:#FF6363;">▓▓▓▓▓▓▓▓ ▓▓▓▓▓▓▓▓</p>
+
+        <p class="scramble-line text-readable"
+           data-clip data-start="32.4" data-duration="3.2"
+           data-scramble='{"text":"动画即数据","chars":"龙腾虎跃春夏秋冬天地"}'
+           data-gsap-duration="1.4"
+           style="color:#5BC0EB; font-size:120px; font-family: Noto Serif SC, serif;">??????</p>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SCENE 7 (36-42s) — Full GSAP timeline: choreographed grid
+         ============================================================ -->
+    <div class="scene scene-scrim" data-clip data-hide-mode="visibility"
+         data-start="36" data-duration="6"
+         style="position:absolute; inset:0; z-index:10;">
+
+      <span class="panel-eyebrow"
+            data-clip data-start="36.2" data-duration="5.2"
+            data-animation="fadeInDown">TIMELINE · 编排动画</span>
+
+      <div class="gc-grid" id="gcGrid">
+        <div class="grid-cell" style="background:#FF6363;">1</div>
+        <div class="grid-cell" style="background:#FFD400; color:#0a0a0f;">2</div>
+        <div class="grid-cell" style="background:#5BC0EB;">3</div>
+        <div class="grid-cell" style="background:#9d8df1;">4</div>
+        <div class="grid-cell" style="background:#2af598; color:#0a0a0f;">5</div>
+        <div class="grid-cell" style="background:#FFB6B9; color:#0a0a0f;">6</div>
+        <div class="grid-cell" style="background:#A0E7E5; color:#0a0a0f;">7</div>
+        <div class="grid-cell" style="background:#FBE7C6; color:#0a0a0f;">8</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Runtime -->
+  <script src="../../runtime/spring.js"></script>
+  <script src="../../runtime/timeline.js"></script>
+  <script src="../../runtime/components.js"></script>
+  <script src="../../runtime/shaders.js"></script>
+  <script src="../../runtime/transitions.js"></script>
+  <script src="../../runtime/effects.js"></script>
+
+  <!-- GSAP core + every plugin we exercise -->
+  <script src="../../runtime/gsap/gsap.min.js"></script>
+  <script src="../../runtime/gsap/CustomEase.min.js"></script>
+  <script src="../../runtime/gsap/CustomWiggle.min.js"></script>
+  <script src="../../runtime/gsap/CustomBounce.min.js"></script>
+  <script src="../../runtime/gsap/EasePack.min.js"></script>
+  <script src="../../runtime/gsap/DrawSVGPlugin.min.js"></script>
+  <script src="../../runtime/gsap/MorphSVGPlugin.min.js"></script>
+  <script src="../../runtime/gsap/MotionPathPlugin.min.js"></script>
+  <script src="../../runtime/gsap/Physics2DPlugin.min.js"></script>
+  <script src="../../runtime/gsap/PhysicsPropsPlugin.min.js"></script>
+  <script src="../../runtime/gsap/Flip.min.js"></script>
+  <script src="../../runtime/gsap/SplitText.min.js"></script>
+  <script src="../../runtime/gsap/ScrambleTextPlugin.min.js"></script>
+  <script src="../../runtime/gsap/TextPlugin.min.js"></script>
+  <script src="../../runtime/gsap-bridge.js"></script>
+
+  <script src="../../runtime/contrast-check.js"></script>
+  <script src="../../runtime/layout-check.js"></script>
+
+  <script>
+    /* ============================================================
+       Programmatic GSAP timelines — exercised via __mvmGsap
+       ============================================================
+       Two examples here:
+         (a) Scene 5: spawn 60 deterministic confetti particles and
+             give them physics-driven velocity / gravity / rotation.
+             Uses __mvm.random("confetti") so two renders are byte-
+             identical.
+         (b) Scene 7: choreographed grid sequence using a real GSAP
+             timeline. The __mvmGsap.timeline({at: 36}) call anchors
+             the timeline at second 36 on the global clock, so all
+             tweens advance on mvm-seek without any wall-clock work.
+     ============================================================ */
+    document.addEventListener('DOMContentLoaded', () => {
+      const start = window.__mvm.delayRender('gsap-showcase-author');
+      // Wait until the bridge has registered all GSAP plugins.
+      const ready = () => {
+        try {
+          /* ---- Confetti (Scene 5) ----------------------------- */
+          const host = document.getElementById('conf-host');
+          const palette = ['#FF6363', '#FFD400', '#5BC0EB', '#9d8df1', '#2af598', '#FFB6B9'];
+          const rng = window.__mvm.random('confetti');
+          const tlConfetti = window.__mvmGsap.timeline({ at: 24.6 });
+          for (let i = 0; i < 60; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'conf';
+            dot.style.background = palette[Math.floor(rng() * palette.length)];
+            host.appendChild(dot);
+            const angle = -90 + (rng() * 160 - 80);
+            const velocity = 700 + rng() * 700;
+            const gravity = 1400 + rng() * 400;
+            const dur = 2.4 + rng() * 0.9;
+            const rot = (rng() - 0.5) * 1080;
+            tlConfetti.to(dot, {
+              physics2D: { velocity, angle, gravity },
+              rotation: rot,
+              duration: dur,
+              ease: 'none',
+            }, 0);
+            tlConfetti.to(dot, {
+              opacity: 0,
+              duration: 0.6,
+              ease: 'power2.in',
+            }, dur - 0.6);
+          }
+
+          /* ---- Extra morph hops (Scene 3) --------------------- */
+          // After the square→triangle morph (declared via data-morph-to),
+          // chain triangle→star→circle programmatically. Anchored on the
+          // global timeline so the bridge's gsap.updateRoot drives them.
+          const morphTl = window.__mvmGsap.timeline({ at: 13.6 });
+          morphTl
+            .to('#morph-shape', { morphSVG: '#shape-star',     duration: 1.0, ease: 'power2.inOut' })
+            .to('#morph-shape', { morphSVG: '#shape-circle',   duration: 1.0, ease: 'power2.inOut' }, '+=0.4')
+            .to('#morph-shape', { morphSVG: '#shape-square',   duration: 1.0, ease: 'power2.inOut' }, '+=0.4');
+
+          /* ---- Choreographed grid (Scene 7) ------------------- */
+          const cells = document.querySelectorAll('#gcGrid .grid-cell');
+          // Author-defined CustomEase (registered through bridge):
+          window.__mvmGsap.registerCustomEase(
+            'mvm.swoop',
+            'M0,0 C0.2,0.0 0.0,0.6 0.4,0.85 0.7,1.05 0.8,0.98 1,1'
+          );
+          const gtl = window.__mvmGsap.timeline({ at: 36.4 });
+          gtl
+            // Stage 1 — cells fly in from below with stagger, scaled in
+            .from(cells, {
+              y: 240, opacity: 0, scale: 0.4, rotation: -12,
+              stagger: { each: 0.06, from: 'center' },
+              duration: 0.9, ease: 'mvm.swoop',
+            }, 0)
+            // Stage 2 — each cell does a tiny "breathe" pulse
+            .to(cells, {
+              scale: 1.08,
+              duration: 0.4, ease: 'sine.inOut',
+              stagger: { each: 0.04, from: 'edges' },
+              yoyo: true, repeat: 1,
+            }, 1.4)
+            // Stage 3 — cells flip on Y axis in a wave, revealing themselves
+            .to(cells, {
+              rotationY: 360,
+              duration: 1.2, ease: 'power2.inOut',
+              stagger: { each: 0.08, from: 'start', grid: [2, 4], axis: 'x' },
+            }, 2.6)
+            // Stage 4 — final settle: gentle scale-down + glow
+            .to(cells, {
+              scale: 0.96,
+              filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.6))',
+              duration: 0.5, ease: 'power2.out',
+            }, 4.4);
+        } catch (e) {
+          window.__mvm.cancelRender(e);
+        } finally {
+          window.__mvm.continueRender(start);
+        }
+      };
+      // Defer to next microtask so the bridge's own DOMContentLoaded
+      // has already run.
+      setTimeout(ready, 0);
+    });
+  </script>
+</body>
+</html>
